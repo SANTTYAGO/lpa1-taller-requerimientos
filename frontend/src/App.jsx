@@ -1,121 +1,62 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { useState, useEffect } from 'react';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [hoteles, setHoteles] = useState([]);
+  const [cargando, setCargando] = useState(true);
+
+  // useEffect hace que esta función se ejecute apenas carga la página
+  useEffect(() => {
+    fetch('http://localhost:5000/api/hoteles')
+      .then(respuesta => respuesta.json())
+      .then(datos => {
+        setHoteles(datos);
+        setCargando(false);
+      })
+      .catch(error => console.error("Error conectando con Python:", error));
+  }, []);
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="min-h-screen bg-gray-100 p-8">
+      <header className="mb-10 text-center">
+        <h1 className="text-4xl font-bold text-blue-900 mb-2">Agencia de Viajes</h1>
+        <p className="text-gray-600">Encuentra y reserva tu hotel ideal</p>
+      </header>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
+      {cargando ? (
+        <p className="text-center text-xl text-gray-500">Cargando hoteles...</p>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto">
+          {hoteles.map(hotel => (
+            <div key={hotel.id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition">
+              {/* Aquí luego pondremos la imagen real del hotel */}
+              <div className="h-48 bg-blue-200 flex items-center justify-center">
+                <span className="text-blue-500 font-semibold">{hotel.nombre}</span>
+              </div>
+              
+              <div className="p-6">
+                <h2 className="text-2xl font-bold text-gray-800 mb-1">{hotel.nombre}</h2>
+                <p className="text-gray-500 mb-4 flex items-center">
+                  📍 {hotel.ubicacion}
+                </p>
+                
+                <div className="border-t border-gray-100 pt-4">
+                  <h3 className="font-semibold text-gray-700 mb-2">Habitaciones:</h3>
+                  <ul className="space-y-2">
+                    {hotel.habitaciones.map(hab => (
+                      <li key={hab.id} className="flex justify-between items-center text-sm bg-gray-50 p-2 rounded">
+                        <span>{hab.tipo} (Máx {hab.capacidad_maxima} pers.)</span>
+                        <span className="font-bold text-green-600">${hab.precio_base}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;
