@@ -93,6 +93,22 @@ function Admin() {
     } catch (err) { alert("Error agregando habitación"); }
   };
 
+  // --- FUNCIÓN PARA R4 (CAMBIAR ESTADO) ---
+  const toggleEstadoHotel = async (hotel) => {
+    // Si está activo lo pasamos a inactivo, y viceversa
+    const nuevoEstado = hotel.estado === 'activo' ? 'inactivo' : 'activo';
+    try {
+      const res = await fetch(`http://127.0.0.1:5000/api/hoteles/${hotel.id}/estado`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estado: nuevoEstado })
+      });
+      if (res.ok) {
+        cargarHoteles(); // Refrescamos la lista para ver el cambio de color
+      }
+    } catch (err) { alert("Error cambiando el estado del hotel"); }
+  };
+
   return (
     <div className="min-h-screen bg-slate-100 font-sans text-slate-800">
       <nav className="bg-slate-900 text-white p-4 shadow-md flex justify-between items-center">
@@ -124,16 +140,32 @@ function Admin() {
           <div className="space-y-4">
             {hoteles.map(hotel => (
               <div key={hotel.id} className="bg-white p-5 rounded-xl shadow-sm border border-slate-200">
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
                   <div>
-                    <h3 className="font-bold text-lg text-indigo-700">{hotel.nombre} <span className="text-sm font-normal text-slate-500">📍 {hotel.ubicacion}</span></h3>
+                    <div className="flex items-center gap-3 mb-1">
+                      <h3 className="font-bold text-lg text-indigo-700">{hotel.nombre}</h3>
+                      {/* ETIQUETA VISUAL DE ESTADO (R4) */}
+                      <span className={`px-2 py-0.5 text-[10px] uppercase font-bold rounded-full border ${hotel.estado === 'activo' ? 'bg-green-50 text-green-600 border-green-200' : 'bg-red-50 text-red-600 border-red-200'}`}>
+                        {hotel.estado}
+                      </span>
+                    </div>
+                    <span className="text-sm font-normal text-slate-500">📍 {hotel.ubicacion}</span>
                   </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => setHotelHabitacion(hotel)} className="bg-emerald-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-emerald-700 shadow-md">
-                      ➕ Añadir Habitación
+
+                  <div className="flex flex-wrap gap-2">
+                    {/* BOTÓN PARA DESACTIVAR/ACTIVAR (R4) */}
+                    <button 
+                      onClick={() => toggleEstadoHotel(hotel)} 
+                      className={`px-3 py-2 rounded text-xs font-bold shadow-sm border transition-colors ${hotel.estado === 'activo' ? 'bg-white border-red-200 text-red-600 hover:bg-red-50' : 'bg-green-600 border-green-600 text-white hover:bg-green-700'}`}
+                    >
+                      {hotel.estado === 'activo' ? '⏸ Suspender (Reformas)' : '▶ Reactivar Hotel'}
                     </button>
-                    <button onClick={() => setHotelGestion(hotel)} className="bg-indigo-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-indigo-700 shadow-md">
-                      Gestionar Promociones / Servicios
+
+                    <button onClick={() => setHotelHabitacion(hotel)} className="bg-emerald-600 text-white px-4 py-2 rounded text-xs font-bold hover:bg-emerald-700 shadow-md">
+                      ➕ Habitación
+                    </button>
+                    <button onClick={() => setHotelGestion(hotel)} className="bg-indigo-600 text-white px-4 py-2 rounded text-xs font-bold hover:bg-indigo-700 shadow-md">
+                      Gestionar
                     </button>
                   </div>
                 </div>

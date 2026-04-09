@@ -27,8 +27,9 @@ function Home() {
   };
 
   const hotelesFiltrados = hoteles.filter(hotel => 
-    hotel.ubicacion.toLowerCase().includes(busqueda.toLowerCase()) ||
-    hotel.nombre.toLowerCase().includes(busqueda.toLowerCase())
+    hotel.estado === 'activo' && // R4: Oculta hoteles inactivos de la vista de clientes
+    (hotel.ubicacion.toLowerCase().includes(busqueda.toLowerCase()) ||
+    hotel.nombre.toLowerCase().includes(busqueda.toLowerCase()))
   );
 
   const confirmarReserva = async (e) => {
