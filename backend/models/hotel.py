@@ -10,9 +10,9 @@ class Hotel:
         self.politicas_pago = politicas_pago
         self.politicas_cancelacion = politicas_cancelacion
         self.fotos = fotos or []
-        self.estado = "activo" # R4: activo o inactivo
+        self.estado = "activo" 
         self.promociones = []
-        self.habitaciones = [] # Lista de objetos Habitacion
+        self.habitaciones = [] 
 
     def agregar_habitacion(self, habitacion):
         self.habitaciones.append(habitacion)
@@ -20,8 +20,19 @@ class Hotel:
     def cambiar_estado(self, nuevo_estado):
         self.estado = nuevo_estado
 
+    def agregar_promocion(self, nombre, descuento, temporada):
+        self.promociones.append({
+            "nombre": nombre,
+            "descuento": descuento,
+            "temporada": temporada
+        })
+
+    def agregar_servicio_adicional(self, servicio):
+        # Evita duplicados si el servicio ya existe
+        if servicio not in self.servicios_generales:
+            self.servicios_generales.append(servicio)
+
     def calcular_calificacion_promedio(self):
-        # R15: Promedio de todas las habitaciones del hotel
         habitaciones_con_calificacion = [h for h in self.habitaciones if h.calcular_calificacion_promedio() > 0]
         if not habitaciones_con_calificacion:
             return 0.0
@@ -41,6 +52,7 @@ class Hotel:
             "politicas_cancelacion": self.politicas_cancelacion,
             "fotos": self.fotos,
             "estado": self.estado,
+            "promociones": self.promociones,
             "calificacion_promedio_general": self.calcular_calificacion_promedio(),
             "habitaciones": [hab.to_dict() for hab in self.habitaciones]
         }

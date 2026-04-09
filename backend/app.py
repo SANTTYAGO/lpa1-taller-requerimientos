@@ -138,6 +138,27 @@ def crear_reserva():
         "reserva": nueva_reserva.to_dict()
     }), 201
 
+@app.route('/api/hoteles/<int:hotel_id>/promociones', methods=['POST'])
+def nueva_promocion(hotel_id):
+    datos = request.json
+    # Buscamos el hotel específico en nuestra base de datos (agencia)
+    hotel = next((h for h in agencia.hoteles if h.id_hotel == hotel_id), None)
+    
+    if hotel:
+        hotel.agregar_promocion(datos['nombre'], datos['descuento'], datos['temporada'])
+        return jsonify({"mensaje": "Promoción registrada con éxito"})
+    return jsonify({"error": "Hotel no encontrado"}), 404
+
+@app.route('/api/hoteles/<int:hotel_id>/servicios', methods=['POST'])
+def nuevo_servicio(hotel_id):
+    datos = request.json
+    hotel = next((h for h in agencia.hoteles if h.id_hotel == hotel_id), None)
+    
+    if hotel:
+        hotel.agregar_servicio_adicional(datos['servicio'])
+        return jsonify({"mensaje": "Servicio añadido con éxito"})
+    return jsonify({"error": "Hotel no encontrado"}), 404
+
 if __name__ == '__main__':
     print("Iniciando API de Agencia de Viajes en el puerto 5000...")
     app.run(debug=True, port=5000)
