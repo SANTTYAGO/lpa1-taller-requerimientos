@@ -159,6 +159,34 @@ def nuevo_servicio(hotel_id):
         return jsonify({"mensaje": "Servicio añadido con éxito"})
     return jsonify({"error": "Hotel no encontrado"}), 404
 
+# --- RUTA PARA R3 (REGISTRAR HABITACIONES EN UN HOTEL) ---
+@app.route('/api/hoteles/<int:hotel_id>/habitaciones', methods=['POST'])
+def nueva_habitacion(hotel_id):
+    datos = request.json
+    hotel = next((h for h in agencia.hoteles if h.id_hotel == hotel_id), None)
+    
+    if hotel:
+        # Procesamos los servicios que vienen separados por comas
+        servicios = [s.strip() for s in datos.get('servicios', '').split(',') if s.strip()]
+        
+        # Instanciamos la nueva habitación
+        nueva_hab = Habitacion(
+            numero=int(datos['numero']),
+            tipo=datos['tipo'],
+            descripcion=datos['descripcion'],
+            precio_base=float(datos['precio_base']),
+            servicios_incluidos=servicios,
+            capacidad_maxima=int(datos['capacidad_maxima'])
+        )
+        
+        # Usamos el método de la clase Hotel para agregarla (POO)
+        hotel.agregar_habitacion(nueva_hab)
+        print(f"🛏️ Nueva habitación {nueva_hab.numero} agregada al hotel {hotel.nombre}")
+        
+        return jsonify({"mensaje": "Habitación registrada con éxito", "habitacion": nueva_hab.to_dict()}), 201
+
+    return jsonify({"error": "Hotel no encontrado"}), 404
+
 if __name__ == '__main__':
     print("Iniciando API de Agencia de Viajes en el puerto 5000...")
     app.run(debug=True, port=5000)

@@ -10,6 +10,12 @@ function Admin() {
   const [nuevaPromocion, setNuevaPromocion] = useState({ nombre: '', descuento: '', temporada: '' });
   const [nuevoServicio, setNuevoServicio] = useState('');
 
+  // Estados para R3 (Registrar Habitaciones)
+  const [hotelHabitacion, setHotelHabitacion] = useState(null);
+  const [nuevaHabitacion, setNuevaHabitacion] = useState({
+    numero: '', tipo: 'Sencilla', descripcion: '', precio_base: '', capacidad_maxima: '1', servicios: ''
+  });
+
   const cargarHoteles = () => {
     fetch('http://127.0.0.1:5000/api/hoteles')
       .then(r => r.json())
@@ -70,6 +76,23 @@ function Admin() {
     } catch (err) { alert("Error agregando servicio"); }
   };
 
+  const registrarHabitacion = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`http://127.0.0.1:5000/api/hoteles/${hotelHabitacion.id}/habitaciones`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nuevaHabitacion)
+      });
+      if (res.ok) {
+        alert("¡Habitación añadida al hotel exitosamente!");
+        setNuevaHabitacion({ numero: '', tipo: 'Sencilla', descripcion: '', precio_base: '', capacidad_maxima: '1', servicios: '' });
+        cargarHoteles(); // Refresca la lista
+        setHotelHabitacion(null); // Cierra el modal
+      }
+    } catch (err) { alert("Error agregando habitación"); }
+  };
+
   return (
     <div className="min-h-screen bg-slate-100 font-sans text-slate-800">
       <nav className="bg-slate-900 text-white p-4 shadow-md flex justify-between items-center">
@@ -105,10 +128,14 @@ function Admin() {
                   <div>
                     <h3 className="font-bold text-lg text-indigo-700">{hotel.nombre} <span className="text-sm font-normal text-slate-500">📍 {hotel.ubicacion}</span></h3>
                   </div>
-                  {/* BOTÓN MÁGICO QUE ABRE EL MODAL R2 */}
-                  <button onClick={() => setHotelGestion(hotel)} className="bg-indigo-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-indigo-700 shadow-md">
-                    Gestionar Promociones / Servicios
-                  </button>
+                  <div className="flex gap-2">
+                    <button onClick={() => setHotelHabitacion(hotel)} className="bg-emerald-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-emerald-700 shadow-md">
+                      ➕ Añadir Habitación
+                    </button>
+                    <button onClick={() => setHotelGestion(hotel)} className="bg-indigo-600 text-white px-4 py-2 rounded text-sm font-bold hover:bg-indigo-700 shadow-md">
+                      Gestionar Promociones / Servicios
+                    </button>
+                  </div>
                 </div>
 
                 {/* Mostrar promociones activas si las hay */}
@@ -188,6 +215,62 @@ function Admin() {
               </div>
             </div>
             
+          </div>
+        </div>
+      )}
+      {/* --- MODAL PARA R3 (AÑADIR HABITACIÓN) --- */}
+      {hotelHabitacion && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+            <div className="bg-emerald-600 text-white p-4 flex justify-between items-center">
+              <h3 className="text-xl font-bold">Registrar Habitación</h3>
+              <button onClick={() => setHotelHabitacion(null)} className="text-xl hover:text-emerald-200">✖</button>
+            </div>
+            
+            <form onSubmit={registrarHabitacion} className="p-6 space-y-4">
+              <p className="text-sm text-slate-500 mb-4">Añadiendo habitación a: <b>{hotelHabitacion.nombre}</b></p>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">N° de Habitación</label>
+                  <input type="number" required className="w-full border rounded px-3 py-2 outline-none focus:border-emerald-500" value={nuevaHabitacion.numero} onChange={e => setNuevaHabitacion({...nuevaHabitacion, numero: e.target.value})} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Tipo</label>
+                  <select className="w-full border rounded px-3 py-2 outline-none focus:border-emerald-500" value={nuevaHabitacion.tipo} onChange={e => setNuevaHabitacion({...nuevaHabitacion, tipo: e.target.value})}>
+                    <option value="Sencilla">Sencilla</option>
+                    <option value="Doble">Doble</option>
+                    <option value="Suite">Suite</option>
+                    <option value="Familiar">Familiar</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1">Precio Base ($)</label>
+                  <input type="number" required className="w-full border rounded px-3 py-2 outline-none focus:border-emerald-500" value={nuevaHabitacion.precio_base} onChange={e => setNuevaHabitacion({...nuevaHabitacion, precio_base: e.target.value})} />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1">Capacidad Máx (Personas)</label>
+                  <input type="number" min="1" required className="w-full border rounded px-3 py-2 outline-none focus:border-emerald-500" value={nuevaHabitacion.capacidad_maxima} onChange={e => setNuevaHabitacion({...nuevaHabitacion, capacidad_maxima: e.target.value})} />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Descripción corta</label>
+                <input type="text" required placeholder="Ej: Vista al mar con balcón..." className="w-full border rounded px-3 py-2 outline-none focus:border-emerald-500" value={nuevaHabitacion.descripcion} onChange={e => setNuevaHabitacion({...nuevaHabitacion, descripcion: e.target.value})} />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-1">Servicios (Separados por coma)</label>
+                <input type="text" placeholder="Ej: TV, Minibar, Jacuzzi..." className="w-full border rounded px-3 py-2 outline-none focus:border-emerald-500" value={nuevaHabitacion.servicios} onChange={e => setNuevaHabitacion({...nuevaHabitacion, servicios: e.target.value})} />
+              </div>
+
+              <button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg mt-4 transition-colors">
+                Guardar Habitación
+              </button>
+            </form>
           </div>
         </div>
       )}
