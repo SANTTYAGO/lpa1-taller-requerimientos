@@ -56,6 +56,36 @@ def obtener_hoteles():
     # Retornamos los hoteles usando la lista oficial del sistema
     return jsonify([h.to_dict() for h in agencia.hoteles])
 
+@app.route('/api/hoteles', methods=['POST'])
+def crear_hotel():
+    datos = request.json
+    
+    # Generamos un ID automático
+    nuevo_id = len(agencia.hoteles) + 1
+    
+    # Procesamos los servicios que vienen como un texto separado por comas
+    servicios = [s.strip() for s in datos.get('servicios', '').split(',') if s.strip()]
+    
+    nuevo_hotel = Hotel(
+        id_hotel=nuevo_id,
+        nombre=datos.get('nombre'),
+        direccion=datos.get('direccion'),
+        telefono=datos.get('telefono'),
+        correo=datos.get('correo'),
+        ubicacion=datos.get('ubicacion'),
+        servicios_generales=servicios,
+        politicas_pago=datos.get('politicas_pago', 'Estándar'),
+        politicas_cancelacion=datos.get('politicas_cancelacion', 'Estándar')
+    )
+    
+    agencia.registrar_hotel(nuevo_hotel)
+    print(f"🏨 Nuevo hotel registrado desde el sistema: {nuevo_hotel.nombre}")
+    
+    return jsonify({
+        "mensaje": "Hotel registrado exitosamente",
+        "hotel": nuevo_hotel.to_dict()
+    }), 201
+
 @app.route('/api/buscar', methods=['GET'])
 def buscar():
     # Retorna las habitaciones disponibles usando el buscador de SistemaReservas
