@@ -201,6 +201,25 @@ def cambiar_estado_hotel(hotel_id):
     
     return jsonify({"error": "Hotel no encontrado"}), 404
 
+# --- RUTA PARA R5 (CAMBIAR ESTADO DE HABITACIÓN) ---
+@app.route('/api/hoteles/<int:hotel_id>/habitaciones/<int:hab_numero>/estado', methods=['PUT'])
+def cambiar_estado_habitacion(hotel_id, hab_numero):
+    datos = request.json
+    hotel = next((h for h in agencia.hoteles if h.id_hotel == hotel_id), None)
+    
+    if hotel:
+        # Buscamos la habitación específica dentro del hotel
+        habitacion = next((hab for hab in hotel.habitaciones if hab.numero == hab_numero), None)
+        if habitacion:
+            nuevo_estado = datos.get('estado')
+            habitacion.cambiar_estado(nuevo_estado)
+            print(f"🔧 Estado de habitación {hab_numero} (Hotel {hotel.nombre}) cambiado a: {nuevo_estado}")
+            return jsonify({"mensaje": "Estado actualizado", "estado": habitacion.estado})
+        
+        return jsonify({"error": "Habitación no encontrada"}), 404
+        
+    return jsonify({"error": "Hotel no encontrado"}), 404
+
 if __name__ == '__main__':
     print("Iniciando API de Agencia de Viajes en el puerto 5000...")
     app.run(debug=True, port=5000)

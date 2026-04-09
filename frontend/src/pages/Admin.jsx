@@ -109,6 +109,21 @@ function Admin() {
     } catch (err) { alert("Error cambiando el estado del hotel"); }
   };
 
+  // --- FUNCIÓN PARA R5 (CAMBIAR ESTADO HABITACIÓN) ---
+  const toggleEstadoHabitacion = async (hotelId, hab) => {
+    const nuevoEstado = hab.estado === 'activa' ? 'inactiva' : 'activa';
+    try {
+      const res = await fetch(`http://127.0.0.1:5000/api/hoteles/${hotelId}/habitaciones/${hab.numero}/estado`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ estado: nuevoEstado })
+      });
+      if (res.ok) {
+        cargarHoteles(); // Refresca para ver el cambio
+      }
+    } catch (err) { alert("Error cambiando el estado de la habitación"); }
+  };
+
   return (
     <div className="min-h-screen bg-slate-100 font-sans text-slate-800">
       <nav className="bg-slate-900 text-white p-4 shadow-md flex justify-between items-center">
@@ -168,6 +183,34 @@ function Admin() {
                       Gestionar
                     </button>
                   </div>
+                </div>
+
+                {/* Lista de habitaciones en el Panel Admin */}
+                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {hotel.habitaciones.map(hab => (
+                    <div key={hab.numero} className={`flex justify-between items-center p-3 rounded-lg border ${hab.estado === 'activa' ? 'bg-slate-50 border-slate-200' : 'bg-red-50 border-red-200'}`}>
+                      <div>
+                        <p className="font-semibold text-sm">{hab.tipo} (N° {hab.numero})</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <p className="text-xs text-slate-500">Máx: {hab.capacidad_maxima} pers.</p>
+                          {/* ETIQUETA R5 */}
+                          <span className={`text-[9px] uppercase font-bold px-1.5 py-0.5 rounded ${hab.estado === 'activa' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                            {hab.estado}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right flex flex-col items-end">
+                        <p className="text-sm font-bold text-indigo-600">${hab.precio_base}</p>
+                        {/* BOTÓN R5 */}
+                        <button 
+                          onClick={() => toggleEstadoHabitacion(hotel.id, hab)} 
+                          className="mt-1 text-[10px] bg-white border shadow-sm px-2 py-1 rounded font-bold hover:bg-slate-50 transition-colors"
+                        >
+                          {hab.estado === 'activa' ? '🔧 Mantenimiento' : '▶ Reactivar'}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
                 {/* Mostrar promociones activas si las hay */}

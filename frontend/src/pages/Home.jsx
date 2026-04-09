@@ -98,10 +98,10 @@ function Home() {
                     {hotel.servicios_generales.map((srv, i) => <span key={i} className="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded">{srv}</span>)}
                   </div>
                   <div className="mt-auto pt-4 border-t border-slate-100 space-y-3">
-                    {hotel.habitaciones.length === 0 ? (
-                      <p className="text-sm text-gray-500 italic">Próximamente habitaciones disponibles.</p>
+                    {hotel.habitaciones.filter(hab => hab.estado === 'activa').length === 0 ? (
+                      <p className="text-sm text-gray-500 italic">No hay habitaciones disponibles por el momento.</p>
                     ) : (
-                      hotel.habitaciones.map(hab => (
+                      hotel.habitaciones.filter(hab => hab.estado === 'activa').map(hab => (
                         <div key={hab.numero} className="flex flex-col bg-slate-50 p-3 rounded-lg border">
                           <div className="flex justify-between items-center mb-2">
                             <div>
