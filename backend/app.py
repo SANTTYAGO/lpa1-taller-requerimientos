@@ -260,6 +260,33 @@ def cotizar_reserva():
                 
     return jsonify({"error": "Habitación no encontrada"}), 404
 
+# --- RUTAS PARA R7 (GESTIÓN DE CALENDARIOS ADMIN) ---
+
+@app.route('/api/calendario/regional', methods=['GET', 'PUT'])
+def gestionar_calendario_regional():
+    if request.method == 'GET':
+        return jsonify(agencia.calendario_regional.to_dict())
+    else:
+        datos = request.json
+        mes = datos.get('mes')
+        temporada = datos.get('temporada')
+        agencia.calendario_regional.configurar_mes(mes, temporada)
+        print(f"🌎 Calendario Regional: Mes {mes} cambiado a temporada {temporada}")
+        return jsonify({"mensaje": "Calendario regional actualizado", "calendario": agencia.calendario_regional.to_dict()})
+
+@app.route('/api/hoteles/<int:hotel_id>/calendario', methods=['PUT'])
+def actualizar_calendario_hotel(hotel_id):
+    datos = request.json
+    mes = datos.get('mes')
+    temporada = datos.get('temporada')
+    
+    hotel = next((h for h in agencia.hoteles if h.id_hotel == hotel_id), None)
+    if hotel:
+        hotel.calendario.configurar_mes(mes, temporada)
+        print(f"🏨 Calendario {hotel.nombre}: Mes {mes} cambiado a {temporada}")
+        return jsonify({"mensaje": "Calendario del hotel actualizado"})
+    return jsonify({"error": "Hotel no encontrado"}), 404
+
 if __name__ == '__main__':
     print("Iniciando API de Agencia de Viajes en el puerto 5000...")
     app.run(debug=True, port=5000)
