@@ -220,6 +220,40 @@ def cambiar_estado_habitacion(hotel_id, hab_numero):
         
     return jsonify({"error": "Hotel no encontrado"}), 404
 
+# --- RUTA PARA R6 (COTIZADOR DINÁMICO) ---
+@app.route('/api/cotizar', methods=['POST'])
+def cotizar_reserva():
+    datos = request.json
+    hotel_id = datos.get('hotel_id')
+    hab_numero = datos.get('habitacion_numero')
+    
+    # Manejo súper seguro de conversiones
+    try:
+        personas = int(datos.get('personas') or 1)
+        noches = int(datos.get('noches') or 1)
+    except ValueError:
+        personas = 1
+        noches = 1
+        
+    temporada = datos.get('temporada', 'baja')
+
+    hotel = next((h for h in agencia.hoteles if h.id_hotel == hotel_id), None)
+    if hotel:
+        hab = next((h for h in hotel.habitaciones if h.numero == hab_numero), None)
+        if hab:
+            try:
+                precio_noche = hab.calcular_precio(personas, temporada)
+                total = precio_noche * noches
+                return jsonify({
+                    "precio_por_noche": precio_noche, 
+                    "total": total
+                }), 200
+            except ValueError as e:
+                # Esto se envía a React si se supera la capacidad máxima
+                return jsonify({"error": str(e)}), 400
+                
+    return jsonify({"error": "Habitación no encontrada"}), 404
+
 if __name__ == '__main__':
     print("Iniciando API de Agencia de Viajes en el puerto 5000...")
     app.run(debug=True, port=5000)

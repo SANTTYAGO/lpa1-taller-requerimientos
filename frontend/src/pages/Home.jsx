@@ -14,12 +14,48 @@ function Home() {
   const [personas, setPersonas] = useState(1);
   const [procesandoPago, setProcesandoPago] = useState(false);
 
+  const [temporada, setTemporada] = useState('baja');
+  const [totalCalculado, setTotalCalculado] = useState(0);
+  const [errorCotizacion, setErrorCotizacion] = useState(null);
+
   useEffect(() => {
     fetch('http://127.0.0.1:5000/api/hoteles')
       .then(r => r.json())
       .then(datos => { setHoteles(datos); setCargando(false); })
       .catch(err => { setError("Error de conexión"); setCargando(false); });
   }, []);
+
+  // Efecto para R6: Recalcular precio dinámicamente
+  // Efecto para R6: Recalcular precio dinámicamente
+  useEffect(() => {
+    if (habitacionSeleccionada) {
+      // Forzamos a que siempre sea un número, si está vacío enviamos 1
+      const p = parseInt(personas) || 1;
+      const n = parseInt(noches) || 1;
+
+      fetch('http://127.0.0.1:5000/api/cotizar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          hotel_id: habitacionSeleccionada.hotelId,
+          habitacion_numero: habitacionSeleccionada.hab.numero,
+          personas: p,
+          noches: n,
+          temporada: temporada
+        })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if(data.total) {
+          setTotalCalculado(data.total);
+          setErrorCotizacion(null); // Limpiamos errores si todo sale bien
+        } else if (data.error) {
+          setErrorCotizacion(data.error); // Capturamos el error de Python
+        }
+      })
+      .catch(err => console.error("Error cotizando", err));
+    }
+  }, [noches, personas, temporada, habitacionSeleccionada]);
 
   const obtenerImagen = (ubicacion) => {
     const nombreArchivo = ubicacion?.toLowerCase().replace('ú', 'u').replace('á', 'a').replace(' ', '');
@@ -151,6 +187,12 @@ function Home() {
                   </div>
                 </div>
               </div>
+              {/* ALERTA DE ERROR VISUAL */}
+              {errorCotizacion && (
+                <div className="bg-red-100 text-red-600 p-2 rounded mb-4 text-sm text-center font-bold">
+                  ⚠️ {errorCotizacion}
+                </div>
+              )}
               <div className="bg-slate-50 p-4 rounded-lg border mb-6 flex justify-between items-center">
                 <span className="font-semibold">Total a Pagar:</span>
                 <span className="text-2xl font-bold text-green-600">${habitacionSeleccionada.hab.precio_base * noches}</span>
