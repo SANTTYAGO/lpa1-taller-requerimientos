@@ -220,36 +220,42 @@ def cambiar_estado_habitacion(hotel_id, hab_numero):
         
     return jsonify({"error": "Hotel no encontrado"}), 404
 
-# --- RUTA PARA R6 (COTIZADOR DINÁMICO) ---
+# --- RUTA PARA R6 y R7 (COTIZADOR DINAMICO) ---
 @app.route('/api/cotizar', methods=['POST'])
 def cotizar_reserva():
     datos = request.json
     hotel_id = datos.get('hotel_id')
     hab_numero = datos.get('habitacion_numero')
     
-    # Manejo súper seguro de conversiones
     try:
         personas = int(datos.get('personas') or 1)
         noches = int(datos.get('noches') or 1)
+        # Recibimos el mes de la fecha de llegada seleccionada en React
+        mes_llegada = str(datos.get('mes_llegada', 1)) 
     except ValueError:
-        personas = 1
-        noches = 1
-        
-    temporada = datos.get('temporada', 'baja')
+        personas, noches, mes_llegada = 1, 1, "1"
 
     hotel = next((h for h in agencia.hoteles if h.id_hotel == hotel_id), None)
     if hotel:
         hab = next((h for h in hotel.habitaciones if h.numero == hab_numero), None)
         if hab:
             try:
-                precio_noche = hab.calcular_precio(personas, temporada)
+                # --- LÓGICA DE R7 (Resolución de Calendarios) ---
+                temp_hotel = hotel.calendario.obtener_temporada(mes_llegada)
+                temp_regional = agencia.calendario_regional.obtener_temporada(mes_llegada)
+                
+                # Si el hotel configuró este mes, gana el hotel. Si dice Heredada, usamos el regional.
+                temporada_final = temp_regional if temp_hotel == "Heredada" else temp_hotel
+                # ------------------------------------------------
+
+                precio_noche = hab.calcular_precio(personas, temporada_final)
                 total = precio_noche * noches
                 return jsonify({
                     "precio_por_noche": precio_noche, 
-                    "total": total
+                    "total": total,
+                    "temporada_aplicada": temporada_final # Le devolvemos el dato a React
                 }), 200
             except ValueError as e:
-                # Esto se envía a React si se supera la capacidad máxima
                 return jsonify({"error": str(e)}), 400
                 
     return jsonify({"error": "Habitación no encontrada"}), 404

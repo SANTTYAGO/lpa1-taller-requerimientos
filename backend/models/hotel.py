@@ -1,3 +1,5 @@
+from models.calendario import Calendario
+
 class Hotel:
     def __init__(self, id_hotel, nombre, direccion, telefono, correo, ubicacion, servicios_generales, politicas_pago, politicas_cancelacion, fotos=None):
         self.id_hotel = id_hotel
@@ -12,7 +14,8 @@ class Hotel:
         self.fotos = fotos or []
         self.estado = "activo" 
         self.promociones = []
-        self.habitaciones = [] 
+        self.habitaciones = []
+        self.calendario = Calendario("Especifico")
 
     def agregar_habitacion(self, habitacion):
         self.habitaciones.append(habitacion)
@@ -54,5 +57,6 @@ class Hotel:
             "estado": self.estado,
             "promociones": self.promociones,
             "calificacion_promedio_general": self.calcular_calificacion_promedio(),
-            "habitaciones": [hab.to_dict() for hab in self.habitaciones]
+            "habitaciones": [hab.to_dict() for hab in self.habitaciones],
+            "calendario": self.calendario.to_dict(),
         }

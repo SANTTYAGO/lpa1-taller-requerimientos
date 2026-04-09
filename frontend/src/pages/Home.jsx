@@ -14,7 +14,8 @@ function Home() {
   const [personas, setPersonas] = useState(1);
   const [procesandoPago, setProcesandoPago] = useState(false);
 
-  const [temporada, setTemporada] = useState('baja');
+  const [fechaLlegada, setFechaLlegada] = useState('');
+  const [temporadaDetectada, setTemporadaDetectada] = useState('');
   const [totalCalculado, setTotalCalculado] = useState(0);
   const [errorCotizacion, setErrorCotizacion] = useState(null);
 
@@ -25,13 +26,13 @@ function Home() {
       .catch(err => { setError("Error de conexión"); setCargando(false); });
   }, []);
 
-  // Efecto para R6: Recalcular precio dinámicamente
-  // Efecto para R6: Recalcular precio dinámicamente
+  // Efecto para R6 y R7: Precio dinámico basado en cantidad de personas, noches, temporada y calendario
   useEffect(() => {
-    if (habitacionSeleccionada) {
-      // Forzamos a que siempre sea un número, si está vacío enviamos 1
+    if (habitacionSeleccionada && fechaLlegada) {
       const p = parseInt(personas) || 1;
       const n = parseInt(noches) || 1;
+      // Extraemos el mes (1-12) de la fecha seleccionada
+      const mes = new Date(fechaLlegada).getMonth() + 1; 
 
       fetch('http://127.0.0.1:5000/api/cotizar', {
         method: 'POST',
@@ -41,21 +42,20 @@ function Home() {
           habitacion_numero: habitacionSeleccionada.hab.numero,
           personas: p,
           noches: n,
-          temporada: temporada
+          mes_llegada: mes
         })
       })
       .then(r => r.json())
       .then(data => {
         if(data.total) {
           setTotalCalculado(data.total);
-          setErrorCotizacion(null); // Limpiamos errores si todo sale bien
-        } else if (data.error) {
-          setErrorCotizacion(data.error); // Capturamos el error de Python
-        }
+          setTemporadaDetectada(data.temporada_aplicada); // Python nos dice qué temporada es
+          setErrorCotizacion(null);
+        } else if (data.error) { setErrorCotizacion(data.error); }
       })
       .catch(err => console.error("Error cotizando", err));
     }
-  }, [noches, personas, temporada, habitacionSeleccionada]);
+  }, [noches, personas, fechaLlegada, habitacionSeleccionada]);
 
   const obtenerImagen = (ubicacion) => {
     const nombreArchivo = ubicacion?.toLowerCase().replace('ú', 'u').replace('á', 'a').replace(' ', '');
@@ -177,12 +177,16 @@ function Home() {
                   <input type="text" required className="w-full border rounded-lg px-3 py-2 outline-none" value={nombreCliente} onChange={(e) => setNombreCliente(e.target.value)} />
                 </div>
                 
-                <div className="flex gap-4">
-                  <div className="flex-1">
-                    <label className="block text-sm font-medium mb-1">Cant. Noches</label>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="col-span-3 md:col-span-1">
+                    <label className="block text-sm font-medium mb-1">Llegada</label>
+                    <input type="date" required className="w-full border rounded-lg px-3 py-2 outline-none" value={fechaLlegada} onChange={(e) => setFechaLlegada(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Noches</label>
                     <input type="number" min="1" required className="w-full border rounded-lg px-3 py-2 outline-none" value={noches} onChange={(e) => setNoches(e.target.value)} />
                   </div>
-                  <div className="flex-1">
+                  <div>
                     <label className="block text-sm font-medium mb-1">Huéspedes</label>
                     <input type="number" min="1" max={habitacionSeleccionada.hab.capacidad_maxima} required className="w-full border rounded-lg px-3 py-2 outline-none" value={personas} onChange={(e) => setPersonas(e.target.value)} />
                   </div>
@@ -197,7 +201,10 @@ function Home() {
               )}
 
               <div className="bg-slate-50 p-4 rounded-lg border mb-6 flex justify-between items-center">
-                <span className="font-semibold text-slate-700">Total a Pagar:</span>
+                <div>
+                  <span className="font-semibold text-slate-700 block">Total a Pagar:</span>
+                  {temporadaDetectada && <span className="text-xs bg-blue-100 text-blue-800 px-2 rounded-full">Temporada {temporadaDetectada}</span>}
+                </div>
                 <span className="text-2xl font-bold text-green-600">
                   ${totalCalculado > 0 ? totalCalculado.toFixed(2) : (habitacionSeleccionada.hab.precio_base * noches).toFixed(2)}
                 </span>
