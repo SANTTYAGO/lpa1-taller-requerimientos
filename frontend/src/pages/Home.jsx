@@ -176,6 +176,7 @@ function Home() {
                   <label className="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
                   <input type="text" required className="w-full border rounded-lg px-3 py-2 outline-none" value={nombreCliente} onChange={(e) => setNombreCliente(e.target.value)} />
                 </div>
+                
                 <div className="flex gap-4">
                   <div className="flex-1">
                     <label className="block text-sm font-medium mb-1">Cant. Noches</label>
@@ -187,19 +188,27 @@ function Home() {
                   </div>
                 </div>
               </div>
+
               {/* ALERTA DE ERROR VISUAL */}
               {errorCotizacion && (
                 <div className="bg-red-100 text-red-600 p-2 rounded mb-4 text-sm text-center font-bold">
                   ⚠️ {errorCotizacion}
                 </div>
               )}
+
               <div className="bg-slate-50 p-4 rounded-lg border mb-6 flex justify-between items-center">
-                <span className="font-semibold">Total a Pagar:</span>
-                <span className="text-2xl font-bold text-green-600">${habitacionSeleccionada.hab.precio_base * noches}</span>
+                <span className="font-semibold text-slate-700">Total a Pagar:</span>
+                <span className="text-2xl font-bold text-green-600">
+                  ${totalCalculado > 0 ? totalCalculado.toFixed(2) : (habitacionSeleccionada.hab.precio_base * noches).toFixed(2)}
+                </span>
               </div>
+
               <div className="flex gap-3">
                 <button type="button" onClick={() => setHabitacionSeleccionada(null)} className="flex-1 bg-white border font-bold py-2.5 rounded-lg">Cancelar</button>
-                <button type="submit" disabled={procesandoPago} className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2.5 rounded-lg">{procesandoPago ? 'Procesando...' : 'Confirmar Pago'}</button>
+                {/* Desactivamos el botón si hay un error de cotización (ej. excedió capacidad) */}
+                <button type="submit" disabled={procesandoPago || errorCotizacion} className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2.5 rounded-lg">
+                  {procesandoPago ? 'Procesando...' : 'Confirmar Pago'}
+                </button>
               </div>
             </form>
           </div>
