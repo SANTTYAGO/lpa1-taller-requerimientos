@@ -77,7 +77,8 @@ function Home() {
       habitacion_numero: habitacionSeleccionada.hab.numero,
       nombre_cliente: nombreCliente,
       noches: parseInt(noches),
-      personas: parseInt(personas)
+      personas: parseInt(personas),
+      fecha_llegada: fechaLlegada
     };
 
     try {

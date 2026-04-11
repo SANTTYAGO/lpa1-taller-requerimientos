@@ -19,6 +19,8 @@ function Admin() {
   const [calendarioRegional, setCalendarioRegional] = useState({});
   const nombresMeses = {1:'Ene', 2:'Feb', 3:'Mar', 4:'Abr', 5:'May', 6:'Jun', 7:'Jul', 8:'Ago', 9:'Sep', 10:'Oct', 11:'Nov', 12:'Dic'};
 
+  const [verCalendarioHab, setVerCalendarioHab] = useState(null);
+
   const cargarHoteles = () => {
     fetch('http://127.0.0.1:5000/api/hoteles')
       .then(r => r.json())
@@ -260,6 +262,9 @@ function Admin() {
                       </div>
                       <div className="text-right flex flex-col items-end">
                         <p className="text-sm font-bold text-indigo-600">${hab.precio_base}</p>
+                        <button onClick={() => setVerCalendarioHab({hotelId: hotel.id, hab})} className="text-[10px] bg-blue-50 border border-blue-200 text-blue-700 px-2 py-1 rounded font-bold hover:bg-blue-100 transition-colors">
+                          📅 Calendario
+                        </button>
                         <button onClick={() => toggleEstadoHabitacion(hotel.id, hab)} className="mt-1 text-[10px] bg-white border shadow-sm px-2 py-1 rounded font-bold hover:bg-slate-50 transition-colors">
                           {hab.estado === 'activa' ? '🔧 Mantenimiento' : '▶ Reactivar'}
                         </button>
@@ -359,6 +364,47 @@ function Admin() {
               </div>
             </div>
             
+          </div>
+        </div>
+      )}
+
+      {/* --- MODAL CALENDARIO DETALLADO DE HABITACIÓN (R8) --- */}
+      {verCalendarioHab && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-fade-in-up">
+            <div className="bg-blue-600 text-white p-4 flex justify-between items-center">
+              <h3 className="text-xl font-bold">📅 Disponibilidad 30 Días</h3>
+              <button onClick={() => setVerCalendarioHab(null)} className="text-xl hover:text-blue-200">✖</button>
+            </div>
+            
+            <div className="p-6">
+              <p className="text-sm text-slate-500 mb-4">
+                Habitación <b>{verCalendarioHab.hab.tipo} (N° {verCalendarioHab.hab.numero})</b>. Los días en rojo representan fechas ocupadas.
+              </p>
+
+              <div className="grid grid-cols-5 md:grid-cols-7 gap-2">
+                {/* Generador de los próximos 30 días en tiempo real */}
+                {Array.from({ length: 30 }).map((_, i) => {
+                  const hoy = new Date();
+                  hoy.setDate(hoy.getDate() + i);
+                  const fechaStr = hoy.toISOString().split('T')[0]; // YYYY-MM-DD
+                  
+                  // R8: Verificamos si la fecha exacta existe en el diccionario de Python
+                  const ocupado = verCalendarioHab.hab.calendario_disponibilidad && verCalendarioHab.hab.calendario_disponibilidad[fechaStr];
+
+                  return (
+                    <div key={fechaStr} className={`p-2 border rounded-lg text-center flex flex-col justify-center items-center h-16 transition-colors ${ocupado ? 'bg-red-50 border-red-200' : 'bg-green-50 border-green-200'}`}>
+                      <span className={`text-[10px] font-bold ${ocupado ? 'text-red-400' : 'text-green-500'}`}>
+                        {hoy.toLocaleDateString('es-ES', { month: 'short' }).toUpperCase()}
+                      </span>
+                      <span className={`text-lg font-black leading-none ${ocupado ? 'text-red-600' : 'text-green-700'}`}>
+                        {hoy.getDate()}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       )}

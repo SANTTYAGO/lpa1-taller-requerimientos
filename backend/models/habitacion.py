@@ -61,5 +61,6 @@ class Habitacion:
             "servicios_incluidos": self.servicios_incluidos,
             "capacidad_maxima": self.capacidad_maxima,
             "estado": self.estado,
+            "calendario_disponibilidad": self.calendario_disponibilidad,
             "calificacion_promedio": self.calcular_calificacion_promedio()
         }

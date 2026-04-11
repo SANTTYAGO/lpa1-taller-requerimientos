@@ -1,5 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from datetime import datetime, timedelta
 
 from models.hotel import Hotel
 from models.habitacion import Habitacion
@@ -94,44 +95,48 @@ def buscar():
 
 @app.route('/api/reservas', methods=['POST'])
 def crear_reserva():
-    # 1. Recibimos los datos en formato JSON desde React
     datos = request.json
-    
     hotel_id = datos.get('hotel_id')
     hab_numero = datos.get('habitacion_numero')
     nombre_cliente = datos.get('nombre_cliente')
     noches = int(datos.get('noches', 1))
     personas = int(datos.get('personas', 1))
+    fecha_llegada_str = datos.get('fecha_llegada') # Ahora recibimos la fecha real
 
-    # 2. Buscar el hotel y la habitación solicitada
+    if not fecha_llegada_str:
+        return jsonify({"error": "Falta la fecha de llegada"}), 400
+
     hotel = next((h for h in agencia.hoteles if h.id_hotel == hotel_id), None)
     if not hotel: return jsonify({"error": "Hotel no encontrado"}), 404
         
     habitacion = next((h for h in hotel.habitaciones if h.numero == hab_numero), None)
     if not habitacion: return jsonify({"error": "Habitación no encontrada"}), 404
 
-    # 3. Crear al cliente (R11)
-    # Generamos un ID autoincremental simple basado en la cantidad de clientes actuales
+    # --- LÓGICA DE R8: FECHAS REALES Y VERIFICACIÓN ---
+    fecha_inicio = datetime.strptime(fecha_llegada_str, '%Y-%m-%d')
+    # Generamos la lista de fechas exactas (ej: ['2026-04-10', '2026-04-11'])
+    fechas_reserva = [(fecha_inicio + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(noches)]
+
+    # Si algún día está ocupado, rechazamos la reserva
+    if not habitacion.verificar_disponibilidad(fechas_reserva):
+        return jsonify({"error": "La habitación ya está ocupada en algunas de estas fechas. Por favor elige otras."}), 400
+    # --------------------------------------------------
+
     nuevo_cliente = Cliente(len(agencia.clientes) + 1, nombre_cliente, "No registrado", "No registrado", "No registrada")
     agencia.registrar_cliente(nuevo_cliente)
 
-    # 4. Crear la reserva (R16)
-    # Simulamos un arreglo de fechas para ocupar el calendario de la habitación
-    fechas_reserva = [f"Noche {i+1}" for i in range(noches)]
-    
     nueva_reserva = Reserva(
         id_reserva=len(agencia.reservas) + 1,
         cliente=nuevo_cliente,
         habitacion=habitacion,
-        fechas=fechas_reserva,
+        fechas=fechas_reserva, # Guardamos las fechas reales
         cantidad_personas=personas
     )
     
-    # 5. Confirmar pago y guardar en el sistema
     nueva_reserva.confirmar_pago()
     agencia.crear_reserva(nueva_reserva)
 
-    print(f"\n✅ ¡NUEVA RESERVA EXITOSA! Cliente: {nombre_cliente} - Hotel: {hotel.nombre} - Habitación: {habitacion.numero}\n")
+    print(f"\n✅ RESERVA: {nombre_cliente} - Hab: {habitacion.numero} - Desde {fechas_reserva[0]} al {fechas_reserva[-1]}\n")
 
     return jsonify({
         "mensaje": "Reserva confirmada exitosamente",
