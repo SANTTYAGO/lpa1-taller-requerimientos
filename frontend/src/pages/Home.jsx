@@ -7,6 +7,8 @@ function Home() {
   const [error, setError] = useState(null);
   
   const [busqueda, setBusqueda] = useState('');
+  const [filtroPrecio, setFiltroPrecio] = useState(1000);
+  const [filtroCalificacion, setFiltroCalificacion] = useState(0);
   const [habitacionSeleccionada, setHabitacionSeleccionada] = useState(null);
   
   const [nombreCliente, setNombreCliente] = useState('');
@@ -65,11 +67,15 @@ function Home() {
     return `/static/${nombreArchivo}.png`;
   };
 
-  const hotelesFiltrados = hoteles.filter(hotel => 
-    hotel.estado === 'activo' && // R4: Oculta hoteles inactivos de la vista de clientes
-    (hotel.ubicacion.toLowerCase().includes(busqueda.toLowerCase()) ||
-    hotel.nombre.toLowerCase().includes(busqueda.toLowerCase()))
-  );
+  const hotelesFiltrados = hoteles.filter(hotel => {
+    // R12: Lógica de filtrado combinada en el cliente
+    const coincideUbicacion = hotel.ubicacion.toLowerCase().includes(busqueda.toLowerCase()) || 
+                             hotel.nombre.toLowerCase().includes(busqueda.toLowerCase());
+    const coincideCalificacion = hotel.calificacion_promedio_general >= filtroCalificacion;
+    const tieneHabitacionBarata = hotel.habitaciones.some(hab => hab.precio_base <= filtroPrecio && hab.estado === 'activa');
+
+    return hotel.estado === 'activo' && coincideUbicacion && coincideCalificacion && tieneHabitacionBarata;
+  });
 
   const confirmarReserva = async (e) => {
     e.preventDefault();
@@ -123,6 +129,34 @@ function Home() {
           </div>
         </div>
       </header>
+
+      {/* BARRA DE FILTROS AVANZADOS (R12) */}
+      <div className="bg-white border-b shadow-sm sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex flex-wrap gap-6 items-center justify-center">
+          
+          {/* Filtro Precio */}
+          <div className="flex flex-col">
+            <label className="text-xs font-bold text-slate-400 uppercase mb-1">Precio Máx: ${filtroPrecio}</label>
+            <input type="range" min="100" max="1500" step="50" value={filtroPrecio} onChange={(e) => setFiltroPrecio(e.target.value)} className="w-40 h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600" />
+          </div>
+
+          {/* Filtro Calificación */}
+          <div className="flex flex-col">
+            <label className="text-xs font-bold text-slate-400 uppercase mb-1">Calificación Mín.</label>
+            <select value={filtroCalificacion} onChange={(e) => setFiltroCalificacion(e.target.value)} className="border rounded-lg px-3 py-1 text-sm outline-none bg-slate-50">
+              <option value="0">Cualquiera</option>
+              <option value="3">3+ Estrellas</option>
+              <option value="4">4+ Estrellas</option>
+              <option value="5">5 Estrellas</option>
+            </select>
+          </div>
+
+          {/* Indicador de resultados */}
+          <div className="text-sm font-medium text-slate-500">
+             Mostrando <span className="text-blue-600 font-bold">{hotelesFiltrados.length}</span> hoteles
+          </div>
+        </div>
+      </div>
 
       <main className="max-w-7xl mx-auto py-12 px-4">
         {error && <div className="bg-red-100 text-red-700 p-4 rounded mb-8">{error}</div>}

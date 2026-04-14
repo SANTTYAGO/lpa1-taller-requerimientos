@@ -89,8 +89,26 @@ def crear_hotel():
 
 @app.route('/api/buscar', methods=['GET'])
 def buscar():
-    # Retorna las habitaciones disponibles usando el buscador de SistemaReservas
-    resultados = agencia.buscar_habitaciones()
+    # R12: Capturamos los parámetros de la URL (?ubicacion=...&precio_max=...)
+    ubicacion = request.args.get('ubicacion')
+    precio_max = request.args.get('precio_max', type=float)
+    calificacion_min = request.args.get('calificacion_min', type=float)
+    
+    # Manejo de fechas si se envían
+    fecha_llegada = request.args.get('llegada')
+    noches = request.args.get('noches', type=int)
+    fechas_lista = []
+    
+    if fecha_llegada and noches:
+        inicio = datetime.strptime(fecha_llegada, '%Y-%m-%d')
+        fechas_lista = [(inicio + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(noches)]
+
+    resultados = agencia.buscar_habitaciones(
+        ubicacion=ubicacion, 
+        precio_max=precio_max, 
+        calificacion_min=calificacion_min,
+        fechas=fechas_lista
+    )
     return jsonify(resultados)
 
 @app.route('/api/reservas', methods=['POST'])
