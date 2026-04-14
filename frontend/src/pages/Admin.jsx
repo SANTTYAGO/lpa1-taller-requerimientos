@@ -3,7 +3,10 @@ import { Link } from 'react-router-dom';
 
 function Admin() {
   const [hoteles, setHoteles] = useState([]);
-  const [nuevoHotel, setNuevoHotel] = useState({ nombre: '', direccion: '', telefono: '', correo: '', ubicacion: '', servicios: '' });
+  const [nuevoHotel, setNuevoHotel] = useState({ 
+    nombre: '', direccion: '', telefono: '', correo: '', ubicacion: '', servicios: '', 
+    politicas_pago: 'Pago por adelantado'
+  });
   
   const [hotelGestion, setHotelGestion] = useState(null);
   const [nuevaPromocion, setNuevaPromocion] = useState({ nombre: '', descuento: '', temporada: '' });
@@ -168,6 +171,13 @@ function Admin() {
               </div>
               <div><label className="block text-sm font-medium mb-1">Dirección</label><input type="text" required className="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2" value={nuevoHotel.direccion} onChange={e => setNuevoHotel({...nuevoHotel, direccion: e.target.value})} /></div>
               <div><label className="block text-sm font-medium mb-1">Servicios Base</label><input type="text" className="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2" placeholder="Piscina, Wifi..." value={nuevoHotel.servicios} onChange={e => setNuevoHotel({...nuevoHotel, servicios: e.target.value})} /></div>
+              <div>
+                <label className="block text-sm font-medium mb-1">Condición de Pago (R9)</label>
+                <select className="w-full border rounded-lg px-3 py-2 outline-none focus:ring-2 bg-white" value={nuevoHotel.politicas_pago} onChange={e => setNuevoHotel({...nuevoHotel, politicas_pago: e.target.value})}>
+                  <option value="Pago por adelantado">Pago completo por adelantado</option>
+                  <option value="Pago al llegar">Pago al llegar al hotel</option>
+                </select>
+              </div>
               <button type="submit" className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 rounded-lg mt-4">Guardar Hotel</button>
             </form>
           </div>
@@ -207,6 +217,7 @@ function Admin() {
                   <div>
                     <div className="flex items-center gap-3 mb-1">
                       <h3 className="font-bold text-lg text-indigo-700">{hotel.nombre}</h3>
+                      <span className="text-xs text-slate-500 block mt-1">💳 {hotel.politicas_pago}</span>
                       <span className={`px-2 py-0.5 text-[10px] uppercase font-bold rounded-full border ${hotel.estado === 'activo' ? 'bg-green-50 text-green-600 border-green-200' : 'bg-red-50 text-red-600 border-red-200'}`}>
                         {hotel.estado}
                       </span>

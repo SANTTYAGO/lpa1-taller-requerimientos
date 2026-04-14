@@ -149,7 +149,10 @@ function Home() {
                               <p className="text-lg font-bold text-indigo-600">${hab.precio_base}</p>
                             </div>
                           </div>
-                          <button onClick={() => setHabitacionSeleccionada({hotelId: hotel.id, hotelNombre: hotel.nombre, hab: hab})} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2 rounded transition-colors">
+                          <button 
+                            onClick={() => setHabitacionSeleccionada({hotelId: hotel.id, hotelNombre: hotel.nombre, hab: hab, politicas_pago: hotel.politicas_pago})} 
+                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2 rounded transition-colors"
+                          >
                             Reservar Habitación
                           </button>
                         </div>
@@ -201,21 +204,31 @@ function Home() {
                 </div>
               )}
 
-              <div className="bg-slate-50 p-4 rounded-lg border mb-6 flex justify-between items-center">
-                <div>
-                  <span className="font-semibold text-slate-700 block">Total a Pagar:</span>
-                  {temporadaDetectada && <span className="text-xs bg-blue-100 text-blue-800 px-2 rounded-full">Temporada {temporadaDetectada}</span>}
+              {/* RESUMEN DE PAGO ADAPTATIVO (R9) */}
+              <div className="bg-slate-50 p-4 rounded-lg border mb-6">
+                <div className="flex justify-between items-center mb-3">
+                  <div>
+                    <span className="font-semibold text-slate-700 block">Total de la Reserva:</span>
+                    {temporadaDetectada && <span className="text-xs bg-blue-100 text-blue-800 px-2 rounded-full">Temporada {temporadaDetectada}</span>}
+                  </div>
+                  <span className="text-2xl font-bold text-green-600">
+                    ${totalCalculado > 0 ? totalCalculado.toFixed(2) : (habitacionSeleccionada.hab.precio_base * noches).toFixed(2)}
+                  </span>
                 </div>
-                <span className="text-2xl font-bold text-green-600">
-                  ${totalCalculado > 0 ? totalCalculado.toFixed(2) : (habitacionSeleccionada.hab.precio_base * noches).toFixed(2)}
-                </span>
+                
+                {/* MENSAJE DE POLÍTICA */}
+                <div className={`p-3 rounded text-sm ${habitacionSeleccionada.politicas_pago === 'Pago al llegar' ? 'bg-orange-100 text-orange-800 border border-orange-200' : 'bg-green-100 text-green-800 border border-green-200'}`}>
+                  <b>Condición:</b> {habitacionSeleccionada.politicas_pago}.
+                  {habitacionSeleccionada.politicas_pago === 'Pago al llegar' 
+                    ? " Tu tarjeta solo se usa como garantía. Pagarás en recepción." 
+                    : " Se realizará el cargo completo de forma inmediata."}
+                </div>
               </div>
 
               <div className="flex gap-3">
                 <button type="button" onClick={() => setHabitacionSeleccionada(null)} className="flex-1 bg-white border font-bold py-2.5 rounded-lg">Cancelar</button>
-                {/* Desactivamos el botón si hay un error de cotización (ej. excedió capacidad) */}
                 <button type="submit" disabled={procesandoPago || errorCotizacion} className="flex-1 bg-green-500 hover:bg-green-600 text-white font-bold py-2.5 rounded-lg">
-                  {procesandoPago ? 'Procesando...' : 'Confirmar Pago'}
+                  {procesandoPago ? 'Procesando...' : (habitacionSeleccionada.politicas_pago === 'Pago al llegar' ? 'Reservar sin cobrar' : 'Pagar Ahora')}
                 </button>
               </div>
             </form>

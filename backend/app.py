@@ -129,11 +129,18 @@ def crear_reserva():
         id_reserva=len(agencia.reservas) + 1,
         cliente=nuevo_cliente,
         habitacion=habitacion,
-        fechas=fechas_reserva, # Guardamos las fechas reales
+        fechas=fechas_reserva,
         cantidad_personas=personas
     )
     
-    nueva_reserva.confirmar_pago()
+    # --- LÓGICA DE R9: CONDICIONES DE PAGO ---
+    if hotel.politicas_pago == "Pago al llegar":
+        nueva_reserva.estado_pago = "Pendiente (Pago en destino)"
+        habitacion.ocupar_fechas(fechas_reserva) # Ocupa el calendario sin cobrar ahora
+    else:
+        nueva_reserva.confirmar_pago() # Marca como pagado y ocupa el calendario
+    # -----------------------------------------
+    
     agencia.crear_reserva(nueva_reserva)
 
     print(f"\n✅ RESERVA: {nombre_cliente} - Hab: {habitacion.numero} - Desde {fechas_reserva[0]} al {fechas_reserva[-1]}\n")
