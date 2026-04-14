@@ -23,6 +23,7 @@ function Home() {
   const [temporadaDetectada, setTemporadaDetectada] = useState('');
   const [totalCalculado, setTotalCalculado] = useState(0);
   const [errorCotizacion, setErrorCotizacion] = useState(null);
+  const [detalleHabitacion, setDetalleHabitacion] = useState(null);
 
   useEffect(() => {
     fetch('http://127.0.0.1:5000/api/hoteles')
@@ -190,12 +191,20 @@ function Home() {
                               <p className="text-lg font-bold text-indigo-600">${hab.precio_base}</p>
                             </div>
                           </div>
-                          <button 
-                            onClick={() => setHabitacionSeleccionada({hotelId: hotel.id, hotelNombre: hotel.nombre, hab: hab, politicas_pago: hotel.politicas_pago})} 
-                            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold py-2 rounded transition-colors"
-                          >
-                            Reservar Habitación
-                          </button>
+                          <div className="flex gap-2 mt-3">
+                            <button 
+                              onClick={() => setDetalleHabitacion({hotel, hab})} 
+                              className="flex-1 bg-white border border-indigo-600 text-indigo-600 hover:bg-indigo-50 text-xs font-bold py-2 rounded transition-colors"
+                            >
+                              Ver Detalles
+                            </button>
+                            <button 
+                              onClick={() => setHabitacionSeleccionada({hotelId: hotel.id, hotelNombre: hotel.nombre, hab: hab, politicas_pago: hotel.politicas_pago})} 
+                              className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded transition-colors"
+                            >
+                              Reservar
+                            </button>
+                          </div>
                         </div>
                       ))
                     )}
@@ -206,6 +215,102 @@ function Home() {
           </div>
         )}
       </main>
+
+      {/* MODAL DE DETALLES DE LA HABITACIÓN (R13) */}
+      {detalleHabitacion && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl overflow-hidden animate-fade-in-up max-h-[90vh] flex flex-col">
+            
+            {/* Imagen Principal y Botón Cerrar */}
+            <div className="h-64 relative bg-slate-200">
+              <button onClick={() => setDetalleHabitacion(null)} className="absolute top-4 right-4 z-10 bg-white/50 hover:bg-white/80 text-slate-800 rounded-full w-8 h-8 flex justify-center items-center font-bold">✖</button>
+              <img 
+                src={detalleHabitacion.hab.fotos?.length > 0 ? detalleHabitacion.hab.fotos[0] : obtenerImagen(detalleHabitacion.hotel.ubicacion)} 
+                alt="Foto de la habitación" 
+                className="w-full h-full object-cover"
+              />
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-6">
+                <h3 className="text-3xl font-bold text-white">{detalleHabitacion.hab.tipo}</h3>
+                <p className="text-blue-200">{detalleHabitacion.hotel.nombre} - N° {detalleHabitacion.hab.numero}</p>
+              </div>
+            </div>
+            
+            {/* Contenido scrolleable */}
+            <div className="p-6 overflow-y-auto flex-1 bg-slate-50">
+              
+              {/* Características Principales */}
+              <div className="flex gap-6 mb-6 pb-6 border-b border-slate-200">
+                <div className="flex-1">
+                  <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Acerca de este espacio</h4>
+                  <p className="text-slate-700 leading-relaxed">{detalleHabitacion.hab.descripcion}</p>
+                </div>
+                <div className="w-1/3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm text-center">
+                  <p className="text-3xl font-bold text-indigo-600 mb-1">${detalleHabitacion.hab.precio_base}</p>
+                  <p className="text-xs text-slate-500 mb-3">/ noche (Precio Base)</p>
+                  <div className="flex items-center justify-center gap-1 text-sm font-bold text-slate-700">
+                    🧑‍🤝‍🧑 Máx. {detalleHabitacion.hab.capacidad_maxima} pers.
+                  </div>
+                </div>
+              </div>
+
+              {/* Servicios */}
+              <div className="mb-6 pb-6 border-b border-slate-200">
+                <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">¿Qué incluye?</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  {detalleHabitacion.hab.servicios_incluidos.map((srv, i) => (
+                    <div key={i} className="flex items-center gap-2 text-slate-700">
+                      <span className="text-green-500">✓</span> {srv}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Calificaciones y Comentarios */}
+              <div>
+                <div className="flex items-center gap-3 mb-4">
+                  <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Comentarios</h4>
+                  <span className="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded font-bold text-sm flex items-center gap-1">
+                    ⭐ {detalleHabitacion.hab.calificacion_promedio > 0 ? detalleHabitacion.hab.calificacion_promedio : 'Nuevo'}
+                  </span>
+                </div>
+                
+                {detalleHabitacion.hab.comentarios?.length === 0 ? (
+                  <p className="text-sm text-slate-500 italic">Esta habitación aún no tiene comentarios.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {detalleHabitacion.hab.comentarios.map((com, i) => (
+                      <div key={i} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                        <div className="flex justify-between items-start mb-2">
+                          <p className="font-bold text-slate-800">{com.autor || com.cliente}</p>
+                          <span className="text-xs text-yellow-500 font-bold">{'★'.repeat(com.calificacion)}</span>
+                        </div>
+                        <p className="text-sm text-slate-600">{com.texto}</p>
+                        <p className="text-[10px] text-slate-400 mt-2 text-right">{com.fecha}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+            </div>
+
+            {/* Footer con llamado a la acción */}
+            <div className="p-4 bg-white border-t border-slate-200 flex justify-between items-center">
+              <p className="text-sm text-slate-500">💳 Política: {detalleHabitacion.hotel.politicas_pago}</p>
+              <button 
+                onClick={() => {
+                  setHabitacionSeleccionada({hotelId: detalleHabitacion.hotel.id, hotelNombre: detalleHabitacion.hotel.nombre, hab: detalleHabitacion.hab, politicas_pago: detalleHabitacion.hotel.politicas_pago});
+                  setDetalleHabitacion(null);
+                }} 
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg shadow-lg transition-colors"
+              >
+                Reservar Ahora
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
       {/* MODAL DE RESERVA */}
       {habitacionSeleccionada && (

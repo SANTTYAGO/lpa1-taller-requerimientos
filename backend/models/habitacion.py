@@ -61,6 +61,9 @@ class Habitacion:
             "servicios_incluidos": self.servicios_incluidos,
             "capacidad_maxima": self.capacidad_maxima,
             "estado": self.estado,
+            "fotos": self.fotos, # R13: Agregado
+            # R13: Mapeamos los comentarios para que sean JSON
+            "comentarios": [c.to_dict() if hasattr(c, 'to_dict') else c for c in self.comentarios],
             "calendario_disponibilidad": self.calendario_disponibilidad,
             "calificacion_promedio": self.calcular_calificacion_promedio()
         }

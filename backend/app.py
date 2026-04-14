@@ -7,6 +7,7 @@ from models.habitacion import Habitacion
 from models.sistema import SistemaReservas
 from models.cliente import Cliente
 from models.reserva import Reserva
+from models.comentario import Comentario
 
 app = Flask(__name__)
 CORS(app) 
@@ -29,9 +30,13 @@ hotel1 = Hotel(
     politicas_cancelacion="Estricta"
 )
 # Agregando habitaciones al Hotel 1 con sus nuevos parámetros
-hotel1.agregar_habitacion(Habitacion(101, "Sencilla", "Vista al mar", 418, ["TV", "Minibar"], 2))
-hotel1.agregar_habitacion(Habitacion(102, "Suite", "Balcón privado", 600, ["Jacuzzi", "Wifi"], 4))
+# --- Creando habitaciones con comentarios y fotos de prueba (R13) ---
+hab_sencilla = Habitacion(101, "Sencilla", "Hermosa vista al mar con balcón privado y decoración caribeña.", 418, ["TV", "Minibar", "Caja Fuerte", "Cafetera"], 2, fotos=["/static/aruba.png"])
+hab_sencilla.agregar_comentario(Comentario("María G.", 5, "¡Increíble! La cama es comodísima y el minibar estaba lleno."))
+hab_sencilla.agregar_comentario(Comentario("Juan P.", 4, "Muy buena atención, aunque el internet falló un poco en la noche."))
 
+hotel1.agregar_habitacion(hab_sencilla)
+hotel1.agregar_habitacion(Habitacion(102, "Suite", "Lujo total con jacuzzi privado.", 600, ["Jacuzzi", "Wifi Premium", "Room Service"], 4))
 agencia.registrar_hotel(hotel1)
 
 # Creando el Hotel 2 (Cancún)
