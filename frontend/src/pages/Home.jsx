@@ -10,6 +10,9 @@ function Home() {
   const [habitacionSeleccionada, setHabitacionSeleccionada] = useState(null);
   
   const [nombreCliente, setNombreCliente] = useState('');
+  const [telefonoCliente, setTelefonoCliente] = useState('');
+  const [correoCliente, setCorreoCliente] = useState('');
+  const [direccionCliente, setDireccionCliente] = useState('');
   const [noches, setNoches] = useState(1);
   const [personas, setPersonas] = useState(1);
   const [procesandoPago, setProcesandoPago] = useState(false);
@@ -76,6 +79,9 @@ function Home() {
       hotel_id: habitacionSeleccionada.hotelId,
       habitacion_numero: habitacionSeleccionada.hab.numero,
       nombre_cliente: nombreCliente,
+      telefono_cliente: telefonoCliente,   // R11
+      correo_cliente: correoCliente,       // R11
+      direccion_cliente: direccionCliente, // R11
       noches: parseInt(noches),
       personas: parseInt(personas),
       fecha_llegada: fechaLlegada
@@ -92,7 +98,8 @@ function Home() {
         const data = await respuesta.json();
         alert(`🎉 ¡ÉXITO! ${data.mensaje}`);
         setHabitacionSeleccionada(null);
-        setNombreCliente(''); setNoches(1); setPersonas(1);
+        setNombreCliente(''); setTelefonoCliente(''); setCorreoCliente(''); setDireccionCliente('');
+        setNoches(1); setPersonas(1); setFechaLlegada('');
       } else { alert("Hubo un error al procesar la reserva."); }
     } catch (error) { alert("Error de conexión con el servidor."); } 
     finally { setProcesandoPago(false); }
@@ -179,6 +186,22 @@ function Home() {
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
                   <input type="text" required className="w-full border rounded-lg px-3 py-2 outline-none" value={nombreCliente} onChange={(e) => setNombreCliente(e.target.value)} />
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                    <input type="tel" required className="w-full border rounded-lg px-3 py-2 outline-none" value={telefonoCliente} onChange={(e) => setTelefonoCliente(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
+                    <input type="email" required className="w-full border rounded-lg px-3 py-2 outline-none" value={correoCliente} onChange={(e) => setCorreoCliente(e.target.value)} />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Dirección de Residencia</label>
+                  <input type="text" required className="w-full border rounded-lg px-3 py-2 outline-none" value={direccionCliente} onChange={(e) => setDireccionCliente(e.target.value)} />
                 </div>
                 
                 <div className="grid grid-cols-3 gap-4">

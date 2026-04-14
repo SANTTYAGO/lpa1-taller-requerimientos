@@ -98,7 +98,14 @@ def crear_reserva():
     datos = request.json
     hotel_id = datos.get('hotel_id')
     hab_numero = datos.get('habitacion_numero')
+    
+    # --- R11: Capturamos TODOS los datos del cliente ---
     nombre_cliente = datos.get('nombre_cliente')
+    telefono_cliente = datos.get('telefono_cliente', 'N/A')
+    correo_cliente = datos.get('correo_cliente', 'N/A')
+    direccion_cliente = datos.get('direccion_cliente', 'N/A')
+    # ---------------------------------------------------
+    
     noches = int(datos.get('noches', 1))
     personas = int(datos.get('personas', 1))
     fecha_llegada_str = datos.get('fecha_llegada')
@@ -118,15 +125,21 @@ def crear_reserva():
     if not habitacion.verificar_disponibilidad(fechas_reserva):
         return jsonify({"error": "Fechas ocupadas"}), 400
 
-    # Determinar temporada final para inyectarla en la Reserva
     temp_hotel = hotel.calendario.obtener_temporada(mes_llegada)
     temp_regional = agencia.calendario_regional.obtener_temporada(mes_llegada)
     temporada_final = temp_regional if temp_hotel == "Heredada" else temp_hotel
 
-    nuevo_cliente = Cliente(len(agencia.clientes) + 1, nombre_cliente, "N/A", "N/A", "N/A")
+    # --- R11: Creamos el objeto Cliente con su información completa ---
+    nuevo_cliente = Cliente(
+        id_cliente=len(agencia.clientes) + 1, 
+        nombre_completo=nombre_cliente, 
+        telefono=telefono_cliente, 
+        correo=correo_cliente, 
+        direccion=direccion_cliente
+    )
     agencia.registrar_cliente(nuevo_cliente)
+    # ------------------------------------------------------------------
 
-    # Creamos la reserva enviando el hotel y la temporada (Para R10)
     nueva_reserva = Reserva(
         id_reserva=len(agencia.reservas) + 1,
         cliente=nuevo_cliente,
@@ -137,7 +150,6 @@ def crear_reserva():
         temporada=temporada_final
     )
     
-    # R9: Condiciones de Pago
     if hotel.politicas_pago == "Pago al llegar":
         nueva_reserva.estado_pago = "Pendiente (Pago en destino)"
         habitacion.ocupar_fechas(fechas_reserva)
