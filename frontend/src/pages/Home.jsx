@@ -195,26 +195,40 @@ function Home() {
                   <div className="absolute top-4 right-4 bg-white/90 px-3 py-1 rounded-full text-sm font-bold text-blue-700 shadow">📍 {hotel.ubicacion}</div>
                 </div>
                 <div className="p-6 flex-1 flex flex-col">
-                  <h3 className="text-2xl font-bold mb-2">{hotel.nombre}</h3>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {hotel.servicios_generales.map((srv, i) => <span key={i} className="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded">{srv}</span>)}
+                  {/* R15: Mostrar calificación general del Hotel */}
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="text-2xl font-bold text-slate-800">{hotel.nombre}</h3>
+                    <span className="bg-yellow-100 text-yellow-700 text-sm font-bold px-2 py-1 rounded-lg flex items-center shadow-sm">
+                      ⭐ {hotel.calificacion_promedio_general > 0 ? hotel.calificacion_promedio_general : 'Nuevo'}
+                    </span>
                   </div>
+                  
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {hotel.servicios_generales.map((srv, i) => <span key={i} className="bg-blue-50 text-blue-600 text-xs px-2 py-1 rounded font-semibold">{srv}</span>)}
+                  </div>
+                  
                   <div className="mt-auto pt-4 border-t border-slate-100 space-y-3">
                     {hotel.habitaciones.filter(hab => hab.estado === 'activa').length === 0 ? (
                       <p className="text-sm text-gray-500 italic">No hay habitaciones disponibles por el momento.</p>
                     ) : (
                       hotel.habitaciones.filter(hab => hab.estado === 'activa').map(hab => (
-                        <div key={hab.numero} className="flex flex-col bg-slate-50 p-3 rounded-lg border">
+                        <div key={hab.numero} className="flex flex-col bg-slate-50 p-3 rounded-lg border border-slate-200 hover:border-indigo-300 transition-colors">
                           <div className="flex justify-between items-center mb-2">
                             <div>
-                              <p className="font-semibold">{hab.tipo}</p>
-                              <p className="text-xs text-slate-500">Máx: {hab.capacidad_maxima} pers.</p>
+                              <p className="font-semibold text-slate-700">{hab.tipo}</p>
+                              <div className="flex items-center gap-3 mt-1">
+                                <p className="text-xs text-slate-500">🧑‍🤝‍🧑 Máx: {hab.capacidad_maxima} pers.</p>
+                                {/* R15: Mostrar calificación individual de la Habitación */}
+                                <p className="text-xs font-bold text-yellow-600">
+                                  ★ {hab.calificacion_promedio > 0 ? hab.calificacion_promedio : '-'}
+                                </p>
+                              </div>
                             </div>
                             <div className="text-right">
                               <p className="text-lg font-bold text-indigo-600">${hab.precio_base}</p>
                             </div>
                           </div>
-                          <div className="flex gap-2 mt-3">
+                          <div className="flex gap-2 mt-2">
                             <button 
                               onClick={() => setDetalleHabitacion({hotel, hab})} 
                               className="flex-1 bg-white border border-indigo-600 text-indigo-600 hover:bg-indigo-50 text-xs font-bold py-2 rounded transition-colors"
@@ -223,7 +237,7 @@ function Home() {
                             </button>
                             <button 
                               onClick={() => setHabitacionSeleccionada({hotelId: hotel.id, hotelNombre: hotel.nombre, hab: hab, politicas_pago: hotel.politicas_pago})} 
-                              className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded transition-colors"
+                              className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2 rounded shadow-sm transition-colors"
                             >
                               Reservar
                             </button>
