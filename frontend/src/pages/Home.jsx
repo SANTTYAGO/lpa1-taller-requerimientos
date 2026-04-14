@@ -25,6 +25,7 @@ function Home() {
   const [errorCotizacion, setErrorCotizacion] = useState(null);
   const [detalleHabitacion, setDetalleHabitacion] = useState(null);
   const [nuevoComentario, setNuevoComentario] = useState({ autor: '', calificacion: '5', texto: '' });
+  const [reservaConfirmada, setReservaConfirmada] = useState(null);
 
   useEffect(() => {
     fetch('http://127.0.0.1:5000/api/hoteles')
@@ -104,11 +105,17 @@ function Home() {
 
       if (respuesta.ok) {
         const data = await respuesta.json();
-        alert(`🎉 ¡ÉXITO! ${data.mensaje}`);
+        
+        // R16: En lugar de un alert, guardamos la reserva oficial devuelta por Python
+        setReservaConfirmada(data.reserva); 
+        
+        // Cerramos el formulario y limpiamos los datos
         setHabitacionSeleccionada(null);
         setNombreCliente(''); setTelefonoCliente(''); setCorreoCliente(''); setDireccionCliente('');
         setNoches(1); setPersonas(1); setFechaLlegada('');
-      } else { alert("Hubo un error al procesar la reserva."); }
+      } else { 
+        alert("Hubo un error al procesar la reserva."); 
+      }
     } catch (error) { alert("Error de conexión con el servidor."); } 
     finally { setProcesandoPago(false); }
   };
@@ -456,6 +463,77 @@ function Home() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* --- MODAL R16: VOUCHER DE CONFIRMACIÓN (TICKET) --- */}
+      {reservaConfirmada && (
+        <div className="fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden animate-fade-in-up">
+            
+            {/* Cabecera Verde de Éxito */}
+            <div className="bg-emerald-500 text-white p-6 text-center relative">
+              <div className="w-16 h-16 bg-white text-emerald-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-3 shadow-inner">
+                ✓
+              </div>
+              <h3 className="text-2xl font-bold tracking-tight">¡Reserva Formalizada!</h3>
+              <p className="text-emerald-100 mt-1 text-sm">Tu viaje ha sido procesado con éxito</p>
+            </div>
+            
+            {/* Cuerpo del Ticket (Efecto de recibo) */}
+            <div className="p-6 relative bg-[#fdfdfd]">
+              {/* Borde dentado decorativo arriba */}
+              <div className="absolute top-0 left-0 w-full h-3 bg-[radial-gradient(circle,transparent_4px,#fdfdfd_5px)] bg-[length:12px_12px] -mt-1.5"></div>
+
+              <div className="text-center mb-6 border-b border-dashed border-slate-300 pb-4">
+                <p className="text-xs text-slate-400 uppercase tracking-widest font-bold mb-1">Código de Reserva</p>
+                <p className="text-3xl font-mono font-bold text-slate-800">#{reservaConfirmada.id.toString().padStart(5, '0')}</p>
+              </div>
+
+              <div className="space-y-4 text-sm text-slate-600">
+                <div className="flex justify-between">
+                  <span className="font-medium text-slate-400">Titular:</span>
+                  <span className="font-bold text-slate-800 text-right">{reservaConfirmada.cliente}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium text-slate-400">Hotel:</span>
+                  <span className="font-bold text-slate-800 text-right">{reservaConfirmada.hotel}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium text-slate-400">Habitación:</span>
+                  <span className="font-bold text-slate-800 text-right">{reservaConfirmada.habitacion_tipo} (N° {reservaConfirmada.habitacion_numero})</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium text-slate-400">Fechas:</span>
+                  <span className="font-bold text-slate-800 text-right">
+                    {reservaConfirmada.fechas[0]} al {reservaConfirmada.fechas[reservaConfirmada.fechas.length - 1]}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center pt-3 border-t border-dashed border-slate-300">
+                  <span className="font-bold text-slate-800">Estado de Pago:</span>
+                  <span className={`px-2 py-1 rounded text-xs font-bold ${reservaConfirmada.estado_pago.includes('Pendiente') ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>
+                    {reservaConfirmada.estado_pago}
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-6 bg-slate-100 p-4 rounded-lg flex justify-between items-center">
+                <span className="font-bold text-slate-500 uppercase text-xs tracking-wider">Total Final</span>
+                <span className="text-2xl font-black text-indigo-600">${reservaConfirmada.monto_total}</span>
+              </div>
+            </div>
+
+            {/* Footer / Botón Cerrar */}
+            <div className="p-4 bg-slate-50 flex gap-2">
+              <button 
+                onClick={() => setReservaConfirmada(null)} 
+                className="flex-1 bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 rounded-lg shadow transition-colors"
+              >
+                Cerrar e ir al inicio
+              </button>
+            </div>
+
           </div>
         </div>
       )}
