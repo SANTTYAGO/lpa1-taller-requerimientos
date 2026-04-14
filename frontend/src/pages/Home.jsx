@@ -24,6 +24,7 @@ function Home() {
   const [totalCalculado, setTotalCalculado] = useState(0);
   const [errorCotizacion, setErrorCotizacion] = useState(null);
   const [detalleHabitacion, setDetalleHabitacion] = useState(null);
+  const [nuevoComentario, setNuevoComentario] = useState({ autor: '', calificacion: '5', texto: '' });
 
   useEffect(() => {
     fetch('http://127.0.0.1:5000/api/hoteles')
@@ -110,6 +111,28 @@ function Home() {
       } else { alert("Hubo un error al procesar la reserva."); }
     } catch (error) { alert("Error de conexión con el servidor."); } 
     finally { setProcesandoPago(false); }
+  };
+
+  // --- FUNCIÓN R14: ENVIAR COMENTARIO ---
+  const enviarComentario = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch(`http://127.0.0.1:5000/api/hoteles/${detalleHabitacion.hotel.id}/habitaciones/${detalleHabitacion.hab.numero}/comentarios`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(nuevoComentario)
+      });
+      if (res.ok) {
+        const data = await res.json();
+        alert("¡Gracias por compartir tu experiencia!");
+        // Actualizamos el modal en tiempo real con los nuevos datos devueltos por Python
+        setDetalleHabitacion({ ...detalleHabitacion, hab: data.habitacion });
+        // Limpiamos el formulario
+        setNuevoComentario({ autor: '', calificacion: '5', texto: '' });
+      }
+    } catch (err) {
+      alert("Error al enviar el comentario.");
+    }
   };
 
   return (
@@ -290,6 +313,31 @@ function Home() {
                     ))}
                   </div>
                 )}
+              </div>
+
+              {/* NUEVO FORMULARIO R14: DEJAR COMENTARIO */}
+              <div className="pt-6 border-t border-slate-200">
+                <h4 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">¿Te hospedaste aquí? Deja tu opinión</h4>
+                <form onSubmit={enviarComentario} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-1">
+                      <input type="text" required placeholder="Tu Nombre Completo" className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500" value={nuevoComentario.autor} onChange={e => setNuevoComentario({...nuevoComentario, autor: e.target.value})} />
+                    </div>
+                    <div className="sm:w-1/3">
+                      <select className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 bg-white" value={nuevoComentario.calificacion} onChange={e => setNuevoComentario({...nuevoComentario, calificacion: e.target.value})}>
+                        <option value="5">⭐⭐⭐⭐⭐ Excelente</option>
+                        <option value="4">⭐⭐⭐⭐ Muy Bueno</option>
+                        <option value="3">⭐⭐⭐ Regular</option>
+                        <option value="2">⭐⭐ Malo</option>
+                        <option value="1">⭐ Pésimo</option>
+                      </select>
+                    </div>
+                  </div>
+                  <textarea required placeholder="Cuéntanos cómo fue tu experiencia en esta habitación..." className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-500 resize-none h-24" value={nuevoComentario.texto} onChange={e => setNuevoComentario({...nuevoComentario, texto: e.target.value})}></textarea>
+                  <button type="submit" className="w-full bg-slate-800 hover:bg-slate-900 text-white font-bold py-2.5 rounded-lg text-sm transition-colors">
+                    Publicar Calificación
+                  </button>
+                </form>
               </div>
 
             </div>

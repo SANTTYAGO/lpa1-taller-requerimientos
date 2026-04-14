@@ -357,6 +357,36 @@ def cancelar_reserva(id_reserva):
         
     return jsonify({"error": "Reserva no encontrada"}), 404
 
+# --- RUTA PARA R14 (DEJAR UN COMENTARIO EN UNA HABITACIÓN) ---
+@app.route('/api/hoteles/<int:hotel_id>/habitaciones/<int:hab_numero>/comentarios', methods=['POST'])
+def agregar_comentario(hotel_id, hab_numero):
+    datos = request.json
+    hotel = next((h for h in agencia.hoteles if h.id_hotel == hotel_id), None)
+    
+    if hotel:
+        # Buscamos la habitación específica
+        habitacion = next((hab for hab in hotel.habitaciones if hab.numero == hab_numero), None)
+        if habitacion:
+            # Creamos el nuevo objeto Comentario
+            nuevo_comentario = Comentario(
+                autor=datos.get('autor', 'Huésped Anónimo'),
+                calificacion=int(datos.get('calificacion', 5)),
+                texto=datos.get('texto', '')
+            )
+            # Lo agregamos usando el método de la clase (POO)
+            habitacion.agregar_comentario(nuevo_comentario)
+            print(f"📝 Nuevo comentario ({nuevo_comentario.calificacion}⭐) en Habitación {hab_numero} de {hotel.nombre}")
+            
+            # Devolvemos la habitación actualizada para que React refresque la pantalla
+            return jsonify({
+                "mensaje": "Comentario añadido con éxito", 
+                "habitacion": habitacion.to_dict()
+            }), 201
+            
+        return jsonify({"error": "Habitación no encontrada"}), 404
+        
+    return jsonify({"error": "Hotel no encontrado"}), 404
+
 if __name__ == '__main__':
     print("Iniciando API de Agencia de Viajes en el puerto 5000...")
     app.run(debug=True, port=5000)
