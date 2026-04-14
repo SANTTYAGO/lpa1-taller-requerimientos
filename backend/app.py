@@ -101,10 +101,9 @@ def crear_reserva():
     nombre_cliente = datos.get('nombre_cliente')
     noches = int(datos.get('noches', 1))
     personas = int(datos.get('personas', 1))
-    fecha_llegada_str = datos.get('fecha_llegada') # Ahora recibimos la fecha real
+    fecha_llegada_str = datos.get('fecha_llegada')
 
-    if not fecha_llegada_str:
-        return jsonify({"error": "Falta la fecha de llegada"}), 400
+    if not fecha_llegada_str: return jsonify({"error": "Falta la fecha de llegada"}), 400
 
     hotel = next((h for h in agencia.hoteles if h.id_hotel == hotel_id), None)
     if not hotel: return jsonify({"error": "Hotel no encontrado"}), 404
@@ -112,43 +111,41 @@ def crear_reserva():
     habitacion = next((h for h in hotel.habitaciones if h.numero == hab_numero), None)
     if not habitacion: return jsonify({"error": "Habitación no encontrada"}), 404
 
-    # --- LÓGICA DE R8: FECHAS REALES Y VERIFICACIÓN ---
     fecha_inicio = datetime.strptime(fecha_llegada_str, '%Y-%m-%d')
-    # Generamos la lista de fechas exactas (ej: ['2026-04-10', '2026-04-11'])
+    mes_llegada = str(fecha_inicio.month)
     fechas_reserva = [(fecha_inicio + timedelta(days=i)).strftime('%Y-%m-%d') for i in range(noches)]
 
-    # Si algún día está ocupado, rechazamos la reserva
     if not habitacion.verificar_disponibilidad(fechas_reserva):
-        return jsonify({"error": "La habitación ya está ocupada en algunas de estas fechas. Por favor elige otras."}), 400
-    # --------------------------------------------------
+        return jsonify({"error": "Fechas ocupadas"}), 400
 
-    nuevo_cliente = Cliente(len(agencia.clientes) + 1, nombre_cliente, "No registrado", "No registrado", "No registrada")
+    # Determinar temporada final para inyectarla en la Reserva
+    temp_hotel = hotel.calendario.obtener_temporada(mes_llegada)
+    temp_regional = agencia.calendario_regional.obtener_temporada(mes_llegada)
+    temporada_final = temp_regional if temp_hotel == "Heredada" else temp_hotel
+
+    nuevo_cliente = Cliente(len(agencia.clientes) + 1, nombre_cliente, "N/A", "N/A", "N/A")
     agencia.registrar_cliente(nuevo_cliente)
 
+    # Creamos la reserva enviando el hotel y la temporada (Para R10)
     nueva_reserva = Reserva(
         id_reserva=len(agencia.reservas) + 1,
         cliente=nuevo_cliente,
         habitacion=habitacion,
+        hotel=hotel,
         fechas=fechas_reserva,
-        cantidad_personas=personas
+        cantidad_personas=personas,
+        temporada=temporada_final
     )
     
-    # --- LÓGICA DE R9: CONDICIONES DE PAGO ---
+    # R9: Condiciones de Pago
     if hotel.politicas_pago == "Pago al llegar":
         nueva_reserva.estado_pago = "Pendiente (Pago en destino)"
-        habitacion.ocupar_fechas(fechas_reserva) # Ocupa el calendario sin cobrar ahora
+        habitacion.ocupar_fechas(fechas_reserva)
     else:
-        nueva_reserva.confirmar_pago() # Marca como pagado y ocupa el calendario
-    # -----------------------------------------
-    
+        nueva_reserva.confirmar_pago()
+        
     agencia.crear_reserva(nueva_reserva)
-
-    print(f"\n✅ RESERVA: {nombre_cliente} - Hab: {habitacion.numero} - Desde {fechas_reserva[0]} al {fechas_reserva[-1]}\n")
-
-    return jsonify({
-        "mensaje": "Reserva confirmada exitosamente",
-        "reserva": nueva_reserva.to_dict()
-    }), 201
+    return jsonify({"mensaje": "Reserva confirmada exitosamente", "reserva": nueva_reserva.to_dict()}), 201
 
 @app.route('/api/hoteles/<int:hotel_id>/promociones', methods=['POST'])
 def nueva_promocion(hotel_id):
@@ -298,6 +295,32 @@ def actualizar_calendario_hotel(hotel_id):
         print(f"🏨 Calendario {hotel.nombre}: Mes {mes} cambiado a {temporada}")
         return jsonify({"mensaje": "Calendario del hotel actualizado"})
     return jsonify({"error": "Hotel no encontrado"}), 404
+
+# --- RUTAS PARA R10 (GESTIÓN Y CANCELACIÓN DE RESERVAS) ---
+@app.route('/api/reservas', methods=['GET'])
+def obtener_reservas():
+    # Devuelve el listado al panel de administración
+    return jsonify([r.to_dict() for r in reversed(agencia.reservas)])
+
+@app.route('/api/reservas/<int:id_reserva>/cancelar', methods=['PUT'])
+def cancelar_reserva(id_reserva):
+    reserva = next((r for r in agencia.reservas if r.id_reserva == id_reserva), None)
+    if reserva:
+        if "Cancelada" in reserva.estado_pago:
+            return jsonify({"error": "La reserva ya estaba cancelada"}), 400
+            
+        # Llamamos al método de la clase (POO puro)
+        reembolso, penalidad = reserva.cancelar_reserva()
+        print(f"🚫 Reserva {id_reserva} cancelada. Reembolso: ${reembolso} | Penalidad: ${penalidad}")
+        
+        return jsonify({
+            "mensaje": "Reserva cancelada con éxito",
+            "estado": reserva.estado_pago,
+            "reembolso": reembolso,
+            "penalidad": penalidad
+        }), 200
+        
+    return jsonify({"error": "Reserva no encontrada"}), 404
 
 if __name__ == '__main__':
     print("Iniciando API de Agencia de Viajes en el puerto 5000...")

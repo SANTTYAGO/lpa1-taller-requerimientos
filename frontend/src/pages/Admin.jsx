@@ -20,9 +20,17 @@ function Admin() {
 
   // Estado para R7 (Calendario Regional)
   const [calendarioRegional, setCalendarioRegional] = useState({});
+  const [reservas, setReservas] = useState([]);
   const nombresMeses = {1:'Ene', 2:'Feb', 3:'Mar', 4:'Abr', 5:'May', 6:'Jun', 7:'Jul', 8:'Ago', 9:'Sep', 10:'Oct', 11:'Nov', 12:'Dic'};
 
   const [verCalendarioHab, setVerCalendarioHab] = useState(null);
+
+  const cargarReservas = () => {
+    fetch('http://127.0.0.1:5000/api/reservas')
+      .then(r => r.json())
+      .then(datos => setReservas(datos))
+      .catch(err => console.error("Error cargando reservas", err));
+  };
 
   const cargarHoteles = () => {
     fetch('http://127.0.0.1:5000/api/hoteles')
@@ -39,7 +47,8 @@ function Admin() {
   };
 
   useEffect(() => { 
-    cargarHoteles(); 
+    cargarHoteles();
+    cargarReservas();
     cargarCalendarioRegional(); 
   }, []);
 
@@ -63,6 +72,22 @@ function Admin() {
       ...prev, calendario: { ...prev.calendario, [mes]: temporada }
     }));
     cargarHoteles();
+  };
+
+  // --- FUNCIÓN R10: CANCELAR RESERVA ---
+  const ejecutarCancelacion = async (id) => {
+    if(!window.confirm("¿Estás seguro de cancelar esta reserva? El sistema calculará la penalidad.")) return;
+    
+    try {
+      const res = await fetch(`http://127.0.0.1:5000/api/reservas/${id}/cancelar`, { method: 'PUT' });
+      const data = await res.json();
+      
+      if(res.ok) {
+        alert(`🚫 Reserva Cancelada Exitosamente.\n\n💰 Reembolso al cliente: $${data.reembolso}\n📉 Penalidad retenida: $${data.penalidad}`);
+        cargarReservas();
+        cargarHoteles(); // Refresca los calendarios para liberar las fechas (R8)
+      } else { alert(data.error); }
+    } catch(err) { alert("Error al cancelar la reserva"); }
   };
   // ------------------------------------
 
@@ -419,6 +444,54 @@ function Admin() {
           </div>
         </div>
       )}
+      
+      {/* PANEL R10: GESTIÓN DE RESERVAS Y CANCELACIONES */}
+      <div className="bg-white p-5 rounded-xl shadow-md border-t-4 border-red-500 mt-8">
+        <h2 className="text-xl font-bold mb-4">🎫 Reservas del Sistema (R10)</h2>
+        {reservas.length === 0 ? (
+          <p className="text-sm text-slate-500 italic">No hay reservas registradas.</p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-slate-100 text-slate-600">
+                <tr>
+                  <th className="p-3 rounded-tl-lg">ID</th>
+                  <th className="p-3">Cliente</th>
+                  <th className="p-3">Detalle</th>
+                  <th className="p-3">Total</th>
+                  <th className="p-3">Estado</th>
+                  <th className="p-3 rounded-tr-lg">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {reservas.map(res => (
+                  <tr key={res.id} className="border-b hover:bg-slate-50">
+                    <td className="p-3 font-bold text-slate-400">#{res.id}</td>
+                    <td className="p-3 font-semibold">{res.cliente}</td>
+                    <td className="p-3">
+                      {res.hotel} ({res.habitacion_tipo}) <br/>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold mt-1 inline-block ${res.temporada === 'Alta' ? 'bg-red-100 text-red-700' : res.temporada === 'Media' ? 'bg-orange-100 text-orange-700' : 'bg-green-100 text-green-700'}`}>T. {res.temporada}</span>
+                    </td>
+                    <td className="p-3 font-bold text-green-600">${res.monto_total}</td>
+                    <td className="p-3">
+                      <span className={`px-2 py-1 rounded text-[10px] font-bold ${res.estado_pago.includes('Cancelada') ? 'bg-red-100 text-red-700 border border-red-200' : res.estado_pago.includes('Pendiente') ? 'bg-orange-100 text-orange-700 border border-orange-200' : 'bg-green-100 text-green-700 border border-green-200'}`}>
+                        {res.estado_pago}
+                      </span>
+                    </td>
+                    <td className="p-3">
+                      {!res.estado_pago.includes('Cancelada') && (
+                        <button onClick={() => ejecutarCancelacion(res.id)} className="bg-red-500 hover:bg-red-600 text-white px-3 py-1.5 rounded text-xs font-bold shadow-sm transition-colors">
+                          Cancelar
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
