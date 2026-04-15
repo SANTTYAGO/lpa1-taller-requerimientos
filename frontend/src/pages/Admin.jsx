@@ -354,7 +354,7 @@ function Admin() {
               <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Dirección</label><input type="text" required className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 focus:bg-white transition-all" value={nuevoHotel.direccion} onChange={e => setNuevoHotel({...nuevoHotel, direccion: e.target.value})} /></div>
               <div><label className="block text-xs font-bold text-slate-500 uppercase mb-1">Servicios Base</label><input type="text" placeholder="Ej: Piscina, Gimnasio..." className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 focus:bg-white transition-all" value={nuevoHotel.servicios} onChange={e => setNuevoHotel({...nuevoHotel, servicios: e.target.value})} /></div>
               <div>
-                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Política de Pago (R9)</label>
+                <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Política de Pago</label>
                 <select className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 focus:bg-white transition-all text-slate-700" value={nuevoHotel.politicas_pago} onChange={e => setNuevoHotel({...nuevoHotel, politicas_pago: e.target.value})}>
                   <option value="Pago por adelantado">Cobro completo por adelantado</option>
                   <option value="Pago al llegar">Tarjeta como garantía (Pago en hotel)</option>
@@ -397,7 +397,7 @@ function Admin() {
             </div>
 
             <div className="flex-1 p-8 bg-white overflow-y-auto">
-              <h3 className="text-lg font-bold text-slate-800 mb-2">Calendario Específico (R7)</h3>
+              <h3 className="text-lg font-bold text-slate-800 mb-2">Calendario Específico</h3>
               <p className="text-xs text-slate-500 mb-6 leading-relaxed">Sobreescribe el calendario Global mes a mes. Selecciona "Heredada" para obedecer la regla mundial.</p>
               <div className="grid grid-cols-2 gap-3 pr-2">
                 {Object.keys(nombresMeses).map(mes => (

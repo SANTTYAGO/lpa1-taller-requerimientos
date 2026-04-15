@@ -57,6 +57,55 @@ hotel2.agregar_habitacion(Habitacion(201, "Doble", "Cerca a la playa", 350, ["TV
 agencia.registrar_hotel(hotel2)
 # -----------------------------------------------------
 
+# ==========================================
+# NUEVOS HOTELES PARA EL CATÁLOGO (EJEMPLOS)
+# ==========================================
+
+# Ejemplo 3: París (Lujo Supremo)
+hotel3 = Hotel(3, "Aura Paris Luxury", "Avenue des Champs-Élysées 15", "+33 1 2345 6789", "paris@auratravel.com", "Paris", ["Spa Premium", "Restaurante Michelin", "Valet Parking"], "Pago por adelantado", "Estricta")
+hab301 = Habitacion(301, "Suite", "Vista a la Torre Eiffel, decoración exquisita y balcón francés.", 850, ["Champagne de bienvenida", "Desayuno a la carta", "Tina de mármol"], 2)
+hab301.agregar_comentario(Comentario("Sophie L.", 5, "Magnifique! La mejor vista de París desde la cama."))
+hab301.agregar_comentario(Comentario("Carlos M.", 4, "Todo excelente, aunque el ascensor es pequeño."))
+hotel3.agregar_habitacion(hab301)
+hotel3.agregar_habitacion(Habitacion(302, "Deluxe", "Habitación amplia y elegante en el centro de París.", 500, ["Wifi Premium", "Máquina Nespresso"], 2))
+agencia.registrar_hotel(hotel3)
+
+# Ejemplo 4: Nueva York (Estilo Urbano/Moderno)
+hotel4 = Hotel(4, "Manhattan Skyline Suites", "Times Square 42nd St", "+1 212 555 0198", "nyc@auratravel.com", "New York", ["Rooftop Bar", "Gimnasio 24/7", "Centro de Negocios"], "Pago por adelantado", "Moderada")
+hab401 = Habitacion(401, "Doble", "Ubicada en el piso 40 con ventanales de piso a techo y vistas a la ciudad.", 420, ["Camas King", "Smart TV 65", "Cortinas automáticas"], 4)
+hab401.agregar_comentario(Comentario("Michael R.", 4, "Ubicación inmejorable. Un poco ruidoso en la noche por el tráfico, pero la vista lo vale."))
+hotel4.agregar_habitacion(hab401)
+agencia.registrar_hotel(hotel4)
+
+# Ejemplo 5: Tokio (Tecnología y Minimalismo)
+hotel5 = Hotel(5, "Tokyo Neon Boutique", "Shinjuku City, Tokyo", "+81 3 9876 5432", "tokyo@auratravel.com", "Tokio", ["Wifi Alta Velocidad", "Onsen Tradicional", "Bar Robot"], "Pago al llegar", "Flexible")
+hab501 = Habitacion(501, "Sencilla", "Cápsula premium con tecnología inteligente y luces adaptativas.", 120, ["Control por tablet", "Purificador de aire", "Inodoro inteligente"], 1)
+hab502 = Habitacion(502, "Doble", "Estilo Ryokan moderno con tatami y camas bajas.", 280, ["Bañera de inmersión", "Té matcha de cortesía"], 2)
+hab502.agregar_comentario(Comentario("Andrea T.", 5, "Me encantó la mezcla entre lo tradicional japonés y lo futurista."))
+hotel5.agregar_habitacion(hab501)
+hotel5.agregar_habitacion(hab502)
+agencia.registrar_hotel(hotel5)
+
+# Ejemplo 6: Roma (Boutique Histórico)
+hotel6 = Hotel(6, "Roma Antica Palace", "Via del Corso 101", "+39 06 1234 5678", "rome@auratravel.com", "Rome", ["Desayuno Buffet", "Tour Guiado", "Alquiler de Vespas"], "Pago al llegar", "Flexible")
+hab601 = Habitacion(601, "Familiar", "Amplia habitación estilo renacentista, ideal para viajes familiares a Italia.", 350, ["2 Camas Queen", "Terraza pequeña", "Cuna disponible"], 4)
+hab601.agregar_comentario(Comentario("Familia Gómez", 5, "Espacio de sobra para los niños y cerca de la Fontana di Trevi."))
+hotel6.agregar_habitacion(hab601)
+agencia.registrar_hotel(hotel6)
+
+# Ejemplo 7: Miami (Playa y Fiesta)
+hotel7 = Hotel(7, "Ocean Drive Aura", "Ocean Drive 700", "+1 305 555 1234", "miami@auratravel.com", "Miami", ["Piscina infinita", "DJ en vivo", "Acceso privado a la playa"], "Pago por adelantado", "Estricta")
+hab701 = Habitacion(701, "Suite", "Suite frente al mar con terraza privada, perfecta para relajarse o festejar.", 600, ["Sistema de sonido envolvente", "Mini bar premium", "Jacuzzi en terraza"], 3)
+hotel7.agregar_habitacion(hab701)
+agencia.registrar_hotel(hotel7)
+
+# Ejemplo 8: Hawaii (Paraíso y Naturaleza)
+hotel8 = Hotel(8, "Aloha Nature Resort", "Waikiki Beach", "+1 808 111 2222", "hawaii@auratravel.com", "Hawaii", ["Clases de Surf", "Spa Hawaiano", "Senderismo"], "Pago al llegar", "Moderada")
+hab801 = Habitacion(801, "Doble", "Bungalow ecológico rodeado de selva y a pasos del mar.", 380, ["Hamaca exterior", "Ducha al aire libre", "Desayuno tropical"], 2)
+hab801.agregar_comentario(Comentario("Leo P.", 5, "El sonido de las olas te arrulla para dormir. Un sueño hecho realidad."))
+hotel8.agregar_habitacion(hab801)
+agencia.registrar_hotel(hotel8)
+
 @app.route('/api/hoteles', methods=['GET'])
 def obtener_hoteles():
     # Retornamos los hoteles usando la lista oficial del sistema
