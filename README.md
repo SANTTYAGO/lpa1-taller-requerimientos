@@ -121,35 +121,69 @@ Revisar la documentación en [`./docs`](./docs)
 | Taipei  |     912 |    220 |  245 |      298 |
 | Tokio   |     989 |    189 |  231 |      255 |
 
-## Instalación
+## Instalación 
 
-TODO: Corregir la explicación de la instalación - Morbi quam lectus, tempus sit amet mi non, facilisis dignissim erat. Aenean tortor libero, rhoncus eu eleifend ut, volutpat id nisi. Ut porta eros at ante rutrum pharetra. Integer nec nulla dictum, vestibulum ligula id, hendrerit ex. Morbi eget tortor metus.
+Sigue estos pasos para preparar el entorno de desarrollo completo (Backend y Frontend) en tu máquina local.
 
 1. Clonar el proyecto
 
    ```bash
-   git clone https://github.com/clubdecomputacion/lpa1-taller-requerimientos.git
-   ```
-2. Crear y activar entorno virtual
+   # Descarga el proyecto e ingresa a la carpeta principal:
+   git clone https://github.com/SANTTYAGO/lpa1-taller-requerimientos
 
-   ```bash
    cd lpa1-taller-requerimientos
-   python3 -m venv venv
-   source venv/bin/activate
    ```
-3. Instalar librerías y dependencias
+2. Configurar el Backend (Python)
+   Es altamente recomendable aislar las dependencias usando un entorno virtual.
 
    ```bash
+   # Ingresar a la carpeta del backend
+   cd backend
+
+   # Crear el entorno virtual
+   python -m venv venv
+
+   # Activar el entorno virtual
+   # ➔ En Windows:
+   venv\Scripts\activate
+   # ➔ En Mac/Linux:
+   source venv/bin/activate
+
+   # Instalar dependencias necesarias (Flask, etc.)
    pip install -r requirements.txt
+
+   # Regresar a la carpeta principal
+   cd ..cd
+   ```
+3. Configurar el Frontend (React/Vite)
+   Asegúrate de tener [Node.js](https://nodejs.org/) instalado en tu equipo.
+
+   ```bash
+   # Ingresar a la carpeta del frontend
+   cd frontend
+
+   # Instalar los paquetes de Node
+   npm install
+
+   # Regresar a la carpeta principal
+   cd ..
    ```
 
 ## Ejecución
 
-TODO: Corregir la explicación de la ejecución - Maecenas sed lorem at arcu varius mollis. Sed eleifend nulla ut blandit interdum. Donec sollicitudin nunc at orci facilisis dignissim. Donec at arcu luctus, commodo magna eget, blandit leo.
+Gracias a nuestro script orquestador, iniciar la aplicación es increíblemente sencillo. No es necesario abrir múltiples terminales.
+
+Asegurarse de estar en la **carpeta raíz** (`lpa1-taller-requerimientos`), tener tu  **entorno virtual activado** , y ejecuta:
 
 1. Ejecutar el proyecto
 
    ```bash
-   cd lpa1-taller-requerimientos
-   python3 app.py
+   python iniciar.py
    ```
+   El script se encargará de levantar el servidor Flask (Backend) en el puerto `5000` y el servidor Vite (Frontend) de forma simultánea.
+
+   * 🌐 **Vista de Clientes (Aura Travel):** [http://localhost:5173/](https://www.google.com/search?q=http://localhost:5173/)
+   * ⚙️ **Panel Administrativo:** [http://localhost:5173/admin](https://www.google.com/search?q=http://localhost:5173/admin)
+
+   > **Nota:** Para apagar ambos servidores de forma segura y al mismo tiempo, simplemente presiona `Ctrl + C` en la terminal donde ejecutaste el script.
+   >
